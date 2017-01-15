@@ -1,17 +1,20 @@
 # gotcha
 Chat server and client library and ready applications written in Golang.
-* [Intro](https://github.com/itsankoff/gotcha#Intro)
-* [Installtion](https://github.com/itsankoff/gotcha#Installtion)
-* [Usage](https://github.com/itsankoff/gotcha#Usage)
-* [Troubleshooting](https://github.com/itsankoff/gotcha#Troubleshooting)
-* [License](https://github.com/itsankoff/gotcha#License)
+* [Intro](#intro)
+* [Install](#install)
+* [Usage](#usage)
+* [Troubleshooting](#troubleshooting)
+* [License](#license)
 
+<a name="intro">
 ## Intro
 This repository provides both library which you can integrate in your project and read Goland server and client.
 
-## Installation
+<a name="install">
+## Install
 go get
 
+<a name="usage">
 ## Usage
 **1. Simple usage of client and server applications:**  
 
@@ -30,8 +33,9 @@ go get
 
 **4. For library API reference check the documentation and [examples](https://github.com/itsankoff/gotcha/blob/master/examples/):**
 
+<a name="troubleshooting">
 ## Troubleshooting
 
-
+<a name="license">
 ## License
 [MIT License](https://github.com/itsankoff/gotcha/blob/master/LICENSE)
