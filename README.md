@@ -31,7 +31,9 @@ go get
     ./bin/server --help
     ./bin/client --help
 
-**4. For library API reference check the documentation and [examples](https://github.com/itsankoff/gotcha/blob/master/examples/):**
+**4. For library API reference check the documentation and
+    [client examples files](https://github.com/itsankoff/gotcha/blob/master/src/client/) and
+    [server examples files](https://github.com/itsankoff/gotcha/blob/master/src/server/):**
 
 <a name="troubleshooting">
 ## Troubleshooting
