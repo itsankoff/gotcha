@@ -73,6 +73,18 @@ func (c *Client) ListContacts() ([]*Contact, error) {
     return []*Contact{}, errors.New("Not Implemented")
 }
 
+func (c *Client) SearchContact(username string) (int64, error) {
+    return -1, errors.New("Not Implemented")
+}
+
+func (c *Client) AddContact(int64) (bool, error) {
+    return false, errors.New("Not Implemented")
+}
+
+func (c *Client) RemoveContact(int64) (bool, error) {
+    return false, errors.New("Not Implemented")
+}
+
 func (c *Client) CreateGroup() int64 {
     return -1
 }
