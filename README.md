@@ -18,18 +18,18 @@ go get
 ## Usage
 **1. Simple usage of client and server applications:**  
 
-    ./server
-    ./client
+    ./bin/server
+    ./bin/client
 
 **2. More sophisticated usage:**  
 
-    ./server --host=<ip|host> --port=<port> --key_path=<private key path> --cert_path=<cert path>
-    ./client --host=<ip|host> --port=<port>
+    ./bin/server --host=<ip|host> --port=<port> --key_path=<private key path> --cert_path=<cert path>
+    ./bin/client --host=<ip|host> --port=<port>
 
 **3. For full information about all possible options for both client and server run:**  
 
-    ./server --help 
-    ./client --help
+    ./bin/server --help
+    ./bin/client --help
 
 **4. For library API reference check the documentation and [examples](https://github.com/itsankoff/gotcha/blob/master/examples/):**
 
