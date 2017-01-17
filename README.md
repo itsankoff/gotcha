@@ -8,7 +8,7 @@ Chat server and client library and ready applications written in Golang.
 
 <a name="intro">
 ## Intro
-This repository provides both library which you can integrate in your project and read Goland server and client.
+This repository provides both library which you can integrate in your project and ready Golang server and client.
 
 <a name="install">
 ## Install
