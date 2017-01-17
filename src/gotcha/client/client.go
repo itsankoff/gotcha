@@ -14,25 +14,6 @@ type Client struct {
     port int16
 }
 
-type Contact struct {
-    Id   int64
-    Name string
-}
-
-type Group struct {
-    Id int64
-    Contacts []*Contact
-}
-
-type History struct {
-
-}
-
-type File struct {
-    data []byte
-    name string
-}
-
 type ClientHandler interface {
     OnMessage(userId int64, message string)
     OnTempMessage(userId int64, message string, expire time.Duration)
@@ -42,6 +23,10 @@ type ClientHandler interface {
     OnGroupFile(userId int64, file File)
 }
 
+
+func NewClient() *Client {
+    return &Client{}
+}
 
 // Connect the client to server on host
 // host scheme wss://<host>:<port>
