@@ -1,12 +1,10 @@
 package main
 
 import (
-    "fmt"
     "gotcha/server"
 )
 
 func main() {
-    server:= gotcha.NewServer()
-    server.Start()
-    fmt.Println("Hello server")
+    server:= gotcha.New()
+    server.Start("wss://127.0.0.1:9999")
 }

@@ -1,13 +1,17 @@
 package gotcha
 
+import (
+    "fmt"
+)
+
 type Server struct {
 
 }
 
-func NewServer() *Server {
+func New() *Server {
     return &Server{}
 }
 
-func (s *Server) Start() {
-
+func (s *Server) Start(host string) {
+    fmt.Println("Hello server")
 }
