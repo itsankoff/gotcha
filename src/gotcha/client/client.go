@@ -1,6 +1,7 @@
 package gotcha
 
 import (
+    "fmt"
     "time"
     "errors"
 )
@@ -24,13 +25,14 @@ type ClientHandler interface {
 }
 
 
-func NewClient() *Client {
+func New() *Client {
     return &Client{}
 }
 
 // Connect the client to server on host
 // host scheme wss://<host>:<port>
 func (c *Client) Connect(host string) (bool, error) {
+    fmt.Println("Hello client")
     return false, errors.New("Not Implemented")
 }
 
