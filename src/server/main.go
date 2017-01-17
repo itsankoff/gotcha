@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "gotcha/server"
+)
 
 func main() {
+    server:= gotcha.NewServer()
+    server.Start()
     fmt.Println("Hello server")
 }
