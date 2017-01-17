@@ -12,7 +12,7 @@ This repository provides both library which you can integrate in your project an
 
 <a name="install">
 ## Install
-go get
+go get github.com/itsankoff/gotcha
 
 <a name="usage">
 ## Usage
