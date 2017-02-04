@@ -1,4 +1,4 @@
-package gotcha
+package server
 
 import (
     "fmt"

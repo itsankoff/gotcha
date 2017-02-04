@@ -1,10 +1,10 @@
 package main
 
 import (
-    "gotcha/client"
+    "github.com/itsankoff/gotcha/client"
 )
 
 func main() {
-    c := gotcha.New()
+    c := client.New()
     c.Connect("wss://127.0.0.1:9999")
 }

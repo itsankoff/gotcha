@@ -1,4 +1,4 @@
-package gotcha
+package client
 
 type History struct {
 
