@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+</body>
+<script>
+    var w = new WebSocket('ws://localhost:9000/websocket');
+    w.onopen = () => { console.log('connected'); }
+    w.onmessage = (e) => { console.log('receive message:', e.data); }
+    w.onclose = () => { console.log('disconnected'); }
+</script>
+</html>
