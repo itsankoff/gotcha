@@ -59,5 +59,6 @@ func (s *Server) Start(host string) {
         go webSocketHandler(conn)
     })
 
-    log.Fatal(http.ListenAndServe(":9000", nil))
+    log.Println("Listen on:", host)
+    log.Fatal(http.ListenAndServe(host, nil))
 }

@@ -6,5 +6,5 @@ import (
 
 func main() {
     server:= server.New()
-    server.Start("wss://127.0.0.1:9999")
+    server.Start("127.0.0.1:9000")
 }
