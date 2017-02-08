@@ -1,17 +1,16 @@
 package server
 
 import (
-    "fmt"
+	"fmt"
 )
 
 type Server struct {
-
 }
 
 func New() *Server {
-    return &Server{}
+	return &Server{}
 }
 
 func (s *Server) Start(host string) {
-    fmt.Println("Hello server")
+	fmt.Println("Hello server")
 }
