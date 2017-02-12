@@ -29,7 +29,23 @@ func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    wss.addConnection(conn)
     go wss.webSocketHandler(conn)
+}
+
+func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
+    wss.connections = append(wss.connections, conn)
+    log.Println("Add connections")
+}
+
+func (wss *WebSocketServer) removeConnection(conn *websocket.Conn) {
+    for i, c := range wss.connections {
+        if c == conn {
+            wss.connections = append(wss.connections[:i], wss.connections[i+1:]...)
+            log.Println("Remove connection")
+            break
+        }
+    }
 }
 
 func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
@@ -38,6 +54,7 @@ func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
         msgType, msg, err := conn.ReadMessage()
         if err != nil {
             log.Println("Connection read error", err.Error())
+            wss.removeConnection(conn)
             return
         }
 
@@ -47,6 +64,7 @@ func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
 
         if err = conn.WriteMessage(msgType, msg); err != nil {
             log.Println("Connection write error", err.Error())
+            wss.removeConnection(conn)
             return
         }
     }
