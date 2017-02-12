@@ -7,12 +7,32 @@ import (
     "fmt"
 )
 
-type Server struct {
+type WebSocketServer struct {
     upgrader        websocket.Upgrader
     connections     []*websocket.Conn
 }
 
-func webSocketHandler(conn *websocket.Conn) {
+func New() WebSocketServer {
+    var upgrader = websocket.Upgrader{
+        ReadBufferSize: 1024,
+        WriteBufferSize: 1024,
+        CheckOrigin: func(r *http.Request) bool { return true },
+    }
+
+    return WebSocketServer{upgrader:upgrader}
+}
+
+func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    conn, err := wss.upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+
+    go wss.webSocketHandler(conn)
+}
+
+func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
     log.Println("New websocket connection available")
     for {
         msgType, msg, err := conn.ReadMessage()
@@ -32,33 +52,12 @@ func webSocketHandler(conn *websocket.Conn) {
     }
 }
 
-func New() *Server {
-	return &Server{
-    }
-}
-
-func (s *Server) Start(host string) {
-
+func (wss *WebSocketServer) Start(host string) {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w, "Hello World")
     })
 
-    var upgrader = websocket.Upgrader{
-        ReadBufferSize: 1024,
-        WriteBufferSize: 1024,
-        CheckOrigin: func(r *http.Request) bool { return true },
-    }
-
-    http.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
-        conn, err := upgrader.Upgrade(w, r, nil)
-        if err != nil {
-            log.Println(err)
-            return
-        }
-
-        go webSocketHandler(conn)
-    })
-
+    http.Handle("/websocket", wss)
     log.Println("Listen on:", host)
     log.Fatal(http.ListenAndServe(host, nil))
 }
