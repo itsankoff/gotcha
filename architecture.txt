@@ -1,0 +1,53 @@
+Message - custom type represeting the message
+    from User
+    to   User
+    message (utf-8 string)
+    messageType (binary, text)
+
+
+User - custom type represeting a user
+    Id
+    In chan Message
+    Out chan Message
+
+
+Group - multicast wrapper of users where when a message is recieved
+        on any user in channel, it multicasts the message to all out channels
+        for the rest of the users
+    Id
+
+
+History - Store for conversations (p2p or groups)
+
+
+StatusHandler - manages the user connection status
+    ChangeStatus(for User, status string)
+    Status(for User) string
+
+
+Contacts - Stores and manages contacts for each user
+    AddContact(for User, newContact User)
+    RemoveContact(for User, newContact User)
+    ListContacts(for User) []User
+
+
+Transport - exports (Contact)
+    - JSON based protocol, WebSocket, HTTP(S), telnet, tcp, etc...
+    - starts a new go routine with listener for each out channel for each user
+        and if message is available through the channel, it packs it with the current
+        protocol implementation and sends it across the network
+    OnUserConnected
+    OnUserDisconnected
+    OnUserStatusChange
+    authenticate
+
+
+| Client -> Server protocol |
+Message - structure which represents the message communication between
+          the server and a client
+    HEADER
+        from
+        to
+        messageType (control, message, file, tmp)
+    BODY:
+        transport representation (WebSocket, HTTP, telnet, tcp..)
