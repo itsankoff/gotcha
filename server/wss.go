@@ -1,18 +1,21 @@
 package server
 
 import (
-    "net/http"
-    "github.com/gorilla/websocket"
     "log"
     "fmt"
+    "net/http"
+    "github.com/gorilla/websocket"
+    "github.com/itsankoff/gotcha/util"
 )
 
 type WebSocketServer struct {
-    upgrader        websocket.Upgrader
-    connections     []*websocket.Conn
+    upgrader            websocket.Upgrader
+    connections         []*websocket.Conn
+    connectHandler      UserHandler
+    disconnectHandler   UserHandler
 }
 
-func New() WebSocketServer {
+func NewWebSocket() WebSocketServer {
     var upgrader = websocket.Upgrader{
         ReadBufferSize: 1024,
         WriteBufferSize: 1024,
@@ -35,13 +38,28 @@ func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
     wss.connections = append(wss.connections, conn)
+    if wss.connectHandler != nil {
+        user := &util.User{
+            In: make(<-chan util.Message),
+            Out: make(chan<- util.Message),
+        }
+        wss.connectHandler(user)
+    }
     log.Println("Add connections")
 }
 
 func (wss *WebSocketServer) removeConnection(conn *websocket.Conn) {
     for i, c := range wss.connections {
         if c == conn {
-            wss.connections = append(wss.connections[:i], wss.connections[i+1:]...)
+            if wss.disconnectHandler != nil {
+                user := &util.User{
+                    In: make(<-chan util.Message),
+                    Out: make(chan<- util.Message),
+                }
+                wss.disconnectHandler(user)
+            }
+            wss.connections = append(wss.connections[:i],
+                                     wss.connections[i+1:]...)
             log.Println("Remove connection")
             break
         }
@@ -70,7 +88,7 @@ func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
     }
 }
 
-func (wss *WebSocketServer) Start(host string) {
+func (wss *WebSocketServer) Start(host string, done <-chan interface{}) {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w, "Hello World")
     })
@@ -78,4 +96,12 @@ func (wss *WebSocketServer) Start(host string) {
     http.Handle("/websocket", wss)
     log.Println("Listen on:", host)
     log.Fatal(http.ListenAndServe(host, nil))
+}
+
+func (wss *WebSocketServer) OnUserConnected(u UserHandler) {
+    wss.connectHandler = u
+}
+
+func (wss *WebSocketServer) OnUserDisconnected(u UserHandler) {
+    wss.disconnectHandler = u
 }
