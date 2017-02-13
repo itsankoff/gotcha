@@ -1,1 +1,2 @@
 * Use flag lib to parse command line for both server and cmd client
+* Add tests for wss.go
