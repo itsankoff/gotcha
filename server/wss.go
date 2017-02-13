@@ -134,6 +134,8 @@ func (wss WebSocketServer) encodeMessage(u *util.User,
 func (wss WebSocketServer) decodeMessage(u *util.User,
                                          data []byte,
                                          dataType int) (util.Message, error) {
+    // TODO: Parse message data
+    //       And find who is the destination
     message := util.NewMessage(u, u, "message", util.DataType(dataType), data)
     return message, nil
 }
