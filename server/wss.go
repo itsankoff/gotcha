@@ -39,8 +39,8 @@ func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
     wss.connections = append(wss.connections, conn)
     if wss.connectHandler != nil {
         user := &util.User{
-            In: make(<-chan util.Message),
-            Out: make(chan<- util.Message),
+            In: make(chan util.Message),
+            Out: make(chan util.Message),
         }
         wss.connectHandler(user)
     }
@@ -52,8 +52,8 @@ func (wss *WebSocketServer) removeConnection(conn *websocket.Conn) {
         if c == conn {
             if wss.disconnectHandler != nil {
                 user := &util.User{
-                    In: make(<-chan util.Message),
-                    Out: make(chan<- util.Message),
+                    In: make(chan util.Message),
+                    Out: make(chan util.Message),
                 }
                 wss.disconnectHandler(user)
             }
