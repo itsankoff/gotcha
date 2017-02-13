@@ -18,23 +18,23 @@ func New() *Server {
     }
 }
 
-func (s *Server) AddTransport(url string, t Transport) {
-    _, ok := s.transports[url]
+func (s *Server) AddTransport(host string, t Transport) {
+    _, ok := s.transports[host]
     if ok {
         // prevent adding multiple transports for the same url
-        log.Println("Try to add multiple transports for same url")
+        log.Println("Try to add multiple transports for same host")
         return
     }
 
-    s.transports[url] = t
+    s.transports[host] = t
     log.Println("Add transport", s.transports)
 }
 
-func (s *Server) RemoveTransport(url string, transport Transport) {
-    _, ok := s.transports[url]
+func (s *Server) RemoveTransport(host string, transport Transport) {
+    _, ok := s.transports[host]
     if ok {
-        delete(s.transports, url)
-        log.Println("Remove transport for", url)
+        delete(s.transports, host)
+        log.Println("Remove transport for", host)
     }
 }
 
