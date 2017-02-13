@@ -49,12 +49,16 @@ func (m Message) To() *User {
     return m.to
 }
 
+func (m Message) MessageType() string {
+    return m.messageType
+}
+
 func (m Message) DataType() DataType {
     return m.dataType
 }
 
 type User struct {
     UserId  string
-    In      <-chan Message
-    Out     chan<- Message
+    In      chan Message
+    Out     chan Message
 }
