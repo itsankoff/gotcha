@@ -12,6 +12,11 @@ type DataType int
 type Message struct {
     from *User
     to   *User
+
+    // Possible values:
+    //  control
+    //  message
+    //  file
     messageType string
     dataType DataType
     data []byte
