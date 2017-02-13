@@ -49,10 +49,6 @@ func (m Message) To() *User {
     return m.to
 }
 
-func (m Message) MessageType() string {
-    return m.messageType
-}
-
 func (m Message) DataType() DataType {
     return m.dataType
 }
