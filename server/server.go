@@ -66,7 +66,8 @@ func (s *Server) Start(done <-chan interface{}) {
     <-done
 }
 
-func (s *Server) StartAsync() (done <-chan interface{}) {
+func (s *Server) StartAsync() (chan interface{}) {
+    done := make(chan interface{})
     go s.Start(done)
     return done
 }
