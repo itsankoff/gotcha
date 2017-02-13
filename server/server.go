@@ -8,14 +8,18 @@ import (
 
 
 type Server struct {
-    transports  map[string]Transport
-    users       []*util.User
+    transports          map[string]Transport
+    users               []*util.User
+    connected           chan *util.User
+    disconnected        chan *util.User
 }
 
 func New() *Server {
     return &Server{
         transports: make(map[string]Transport),
         users: make([]*util.User, 10),
+        connected: make(chan *util.User),
+        disconnected: make(chan *util.User),
     }
 }
 
@@ -50,19 +54,35 @@ func (s *Server) RemoveTransport(host string) error {
     return errors.New("No trasport for host " + host)
 }
 
-func (s *Server) userConnected(user *util.User) {
-    s.users = append(s.users, user)
-    // TODO: Generate unique user id
-    log.Println("Add user")
+func (s *Server) userConnected() {
+    log.Println("Start user connected observer")
+    select {
+    case user := <-s.connected:
+        s.users = append(s.users, user)
+        log.Println("Add user to server")
+        go s.echoHandler(user)
+    }
 }
 
-func (s *Server) userDisconnected(user *util.User) {
-    for i, u := range s.users {
-        if u == user {
-            s.users = append(s.users[:i], s.users[i+1:]...)
-            log.Println("Remove user", user.Id)
-            break
+func (s *Server) userDisconnected() {
+    log.Println("Start user disconnected observer")
+    select {
+    case user := <-s.disconnected:
+        for i, u := range s.users {
+            if u == user {
+                s.users = append(s.users[:i], s.users[i+1:]...)
+                log.Println("Remove user", user.Id)
+                break
+            }
         }
+    }
+}
+
+func (s Server) echoHandler(user *util.User) {
+    select {
+    case msg := <-user.In:
+        log.Println("Message from user", user.Id, msg.String())
+        user.Out<-msg
     }
 }
 
@@ -71,14 +91,18 @@ func (s *Server) Start(done <-chan interface{}) error {
         return errors.New("Need to add transport before calling Start")
     }
 
+    go s.userConnected()
+    go s.userDisconnected()
     for url, t := range s.transports {
         log.Println("Start transport for", url)
-        t.OnUserConnected(s.userConnected)
-        t.OnUserDisconnected(s.userDisconnected)
+        t.OnUserConnected(s.connected)
+        t.OnUserDisconnected(s.disconnected)
         go t.Start(url, done)
     }
 
     <-done
+    close(s.connected)
+    close(s.disconnected)
     return nil
 }
 
