@@ -60,7 +60,7 @@ func (s *Server) userDisconnected(user *util.User) {
     for i, u := range s.users {
         if u == user {
             s.users = append(s.users[:i], s.users[i+1:]...)
-            log.Println("Remove user", user.UserId)
+            log.Println("Remove user", user.Id)
             break
         }
     }

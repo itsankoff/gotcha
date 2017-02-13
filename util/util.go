@@ -58,7 +58,7 @@ func (m Message) DataType() DataType {
 }
 
 type User struct {
-    UserId  string
+    Id  string
     In      chan Message
     Out     chan Message
 }
