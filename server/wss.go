@@ -2,7 +2,6 @@ package server
 
 import (
     "log"
-    "fmt"
     "net/http"
     "github.com/gorilla/websocket"
     "github.com/itsankoff/gotcha/util"
@@ -89,12 +88,13 @@ func (wss *WebSocketServer) webSocketHandler(conn *websocket.Conn) {
 }
 
 func (wss *WebSocketServer) Start(host string, done <-chan interface{}) {
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello World")
-    })
+    subPath := "/websocket"
+    http.Handle(subPath, wss)
+    defer func() {
+        http.Handle(subPath, nil)
+    }()
 
-    http.Handle("/websocket", wss)
-    log.Println("Listen on:", host)
+    log.Println("Listen on:", host + subPath)
     log.Fatal(http.ListenAndServe(host, nil))
 }
 
