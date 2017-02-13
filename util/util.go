@@ -1,10 +1,10 @@
 package util
 
-import "errors"
+import "log"
 
 const (
-    BINARY = iota
-    TEXT
+    TEXT   = 1
+    BINARY = 2
 )
 
 type DataType int
@@ -12,33 +12,38 @@ type DataType int
 type Message struct {
     from *User
     to   *User
+    messageType string
     dataType DataType
     data []byte
 }
 
-func NewMessage(from *User, to *User, dataType DataType, data []byte) Message {
+func NewMessage(from *User, to *User, messageType string,
+                dataType DataType, data []byte) Message {
     return Message{
         from: from,
         to: to,
+        messageType: messageType,
         dataType: dataType,
         data: data,
     }
 }
 
-func (m Message) String() (string, error) {
+func (m Message) String() string {
     if m.dataType != TEXT {
-        return "", errors.New("Message data is not a text type")
+        log.Println("Message data is not a text type")
+        return ""
     }
 
-    return string(m.data), nil
+    return string(m.data)
 }
 
-func (m Message) Binary() ([]byte, error) {
+func (m Message) Binary() []byte {
     if m.dataType != BINARY {
-        return []byte{}, errors.New("Message data is not binary type")
+        log.Println("Message data is not binary type")
+        return []byte{}
     }
 
-    return m.data, nil
+    return m.data
 }
 
 func (m Message) From() *User {
@@ -51,6 +56,10 @@ func (m Message) To() *User {
 
 func (m Message) DataType() DataType {
     return m.dataType
+}
+
+func (m Message) Raw() []byte {
+    return m.data
 }
 
 type User struct {
