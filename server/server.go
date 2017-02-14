@@ -2,24 +2,24 @@ package server
 
 import (
     "log"
-    "github.com/itsankoff/gotcha/util"
+    "github.com/itsankoff/gotcha/common"
     "errors"
 )
 
 
 type Server struct {
     transports          map[string]Transport
-    users               []*util.User
-    connected           chan *util.User
-    disconnected        chan *util.User
+    users               []*common.User
+    connected           chan *common.User
+    disconnected        chan *common.User
 }
 
 func New() *Server {
     return &Server{
         transports: make(map[string]Transport),
-        users: make([]*util.User, 10),
-        connected: make(chan *util.User),
-        disconnected: make(chan *util.User),
+        users: make([]*common.User, 10),
+        connected: make(chan *common.User),
+        disconnected: make(chan *common.User),
     }
 }
 
@@ -78,7 +78,7 @@ func (s *Server) userDisconnected() {
     }
 }
 
-func (s Server) echoHandler(user *util.User) {
+func (s Server) echoHandler(user *common.User) {
     select {
     case msg := <-user.In:
         log.Println("Message from user", user.Id, msg.String())

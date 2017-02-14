@@ -6,14 +6,14 @@ import (
     "strconv"
     "net/http"
     "github.com/gorilla/websocket"
-    "github.com/itsankoff/gotcha/util"
+    "github.com/itsankoff/gotcha/common"
 )
 
 type WebSocketServer struct {
     upgrader            websocket.Upgrader
-    connections         map[*util.User]*websocket.Conn
-    connected           chan<- *util.User
-    disconnected        chan<- *util.User
+    connections         map[*common.User]*websocket.Conn
+    connected           chan<- *common.User
+    disconnected        chan<- *common.User
 }
 
 func NewWebSocket() WebSocketServer {
@@ -25,7 +25,7 @@ func NewWebSocket() WebSocketServer {
 
     return WebSocketServer{
         upgrader:upgrader,
-        connections: make(map[*util.User]*websocket.Conn),
+        connections: make(map[*common.User]*websocket.Conn),
     }
 }
 
@@ -42,10 +42,10 @@ func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
     now := time.Now().Unix()
     id := strconv.FormatInt(now, 10)
-    user := &util.User{
+    user := &common.User{
         Id: id,
-        In: make(chan util.Message),
-        Out: make(chan util.Message),
+        In: make(chan common.Message),
+        Out: make(chan common.Message),
     }
 
     wss.connections[user] = conn
@@ -73,7 +73,7 @@ func (wss *WebSocketServer) removeConnection(conn *websocket.Conn) {
     }
 }
 
-func (wss *WebSocketServer) inputHandler(user *util.User, conn *websocket.Conn) {
+func (wss *WebSocketServer) inputHandler(user *common.User, conn *websocket.Conn) {
     log.Println("Start websocket input handler for", user.Id)
     for {
         msgType, msg, err := conn.ReadMessage()
@@ -94,7 +94,7 @@ func (wss *WebSocketServer) inputHandler(user *util.User, conn *websocket.Conn) 
     }
 }
 
-func (wss *WebSocketServer) outputHandler(user *util.User, conn *websocket.Conn) {
+func (wss *WebSocketServer) outputHandler(user *common.User, conn *websocket.Conn) {
     log.Println("Start websocket output handler for", user.Id)
     select {
     case msg := <-user.Out:
@@ -118,24 +118,24 @@ func (wss *WebSocketServer) Start(host string, done <-chan interface{}) {
     log.Fatal(http.ListenAndServe(host, nil))
 }
 
-func (wss *WebSocketServer) OnUserConnected(handler chan<- *util.User) {
+func (wss *WebSocketServer) OnUserConnected(handler chan<- *common.User) {
     wss.connected = handler
 }
 
-func (wss *WebSocketServer) OnUserDisconnected(handler chan<- *util.User) {
+func (wss *WebSocketServer) OnUserDisconnected(handler chan<- *common.User) {
     wss.disconnected = handler
 }
 
-func (wss WebSocketServer) encodeMessage(u *util.User,
-                                         msg util.Message) ([]byte, int) {
+func (wss WebSocketServer) encodeMessage(u *common.User,
+                                         msg common.Message) ([]byte, int) {
     return msg.Raw(), int(msg.DataType())
 }
 
-func (wss WebSocketServer) decodeMessage(u *util.User,
+func (wss WebSocketServer) decodeMessage(u *common.User,
                                          data []byte,
-                                         dataType int) (util.Message, error) {
+                                         dataType int) (common.Message, error) {
     // TODO: Parse message data
     //       And find who is the destination
-    message := util.NewMessage(u, u, "message", util.DataType(dataType), data)
+    message := common.NewMessage(u, u, "message", common.DataType(dataType), data)
     return message, nil
 }
