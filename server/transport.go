@@ -1,11 +1,11 @@
 package server
 
-import "github.com/itsankoff/gotcha/util"
+import "github.com/itsankoff/gotcha/common"
 
-type UserHandler func(*util.User)
+type UserHandler func(*common.User)
 
 type Transport interface {
-    OnUserConnected(UserHandler)
-    OnUserDisconnected(UserHandler)
-    Start(url string, done <-chan interface{})
+    OnUserConnected(chan<- *common.User)
+    OnUserDisconnected(chan<- *common.User)
+    Start(host string, done <-chan interface{})
 }
