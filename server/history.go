@@ -3,6 +3,7 @@ package server
 import (
     "github.com/itsankoff/gotcha/common"
     "time"
+    "log"
 )
 
 type History struct {
@@ -13,7 +14,8 @@ func NewHistory() *History {
     return &History{}
 }
 
-func (h History) AddMessage(m *common.Message) bool {
+func (h History) AddMessage(msg *common.Message) bool {
+    log.Println("Add message in history", msg)
     return false
 }
 

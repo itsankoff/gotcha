@@ -12,14 +12,59 @@ type Server struct {
     users               []*common.User
     connected           chan *common.User
     disconnected        chan *common.User
+    aggregate           chan *common.Message
+    messageHandlers     map[string]chan *common.Message
+
+    control             *Control
+    messanger           *Messanger
+    history             *History
+    outputStore         *OutputStore
 }
 
 func New() *Server {
-    return &Server{
+    s := &Server{
         transports: make(map[string]Transport),
         users: make([]*common.User, 10),
         connected: make(chan *common.User),
         disconnected: make(chan *common.User),
+        aggregate: make(chan *common.Message),
+        messageHandlers: make(map[string]chan *common.Message),
+    }
+
+    // register control handler
+    controlInput := make(chan *common.Message)
+    s.control = NewControl(controlInput)
+    s.messageHandlers["control"] = controlInput
+
+    // register message handler
+    messangerInput := make(chan *common.Message)
+    s.history = NewHistory()
+    s.outputStore = NewOutputStore()
+
+    s.messanger = NewMessanger(messangerInput, s.history, s.outputStore)
+    s.messageHandlers["message"] = messangerInput
+    s.messageHandlers["file"] = messangerInput
+
+    return s
+}
+
+func (s *Server) startRouter() {
+    select {
+    case msg := <-s.aggregate:
+        cmdType := msg.CmdType()
+        handler, ok := s.messageHandlers[cmdType]
+        if ok {
+            handler <- msg
+        } else {
+            log.Println("No registered handler for cmd type", cmdType)
+        }
+    }
+}
+
+func (s *Server) aggregateMessages(user *common.User) {
+    select {
+    case msg := <-user.In:
+        s.aggregate <- msg
     }
 }
 
@@ -59,8 +104,9 @@ func (s *Server) userConnected() {
     select {
     case user := <-s.connected:
         s.users = append(s.users, user)
+        s.outputStore.AddOutput(user.Id, user.Out)
         log.Println("Add user to server")
-        go s.echoHandler(user)
+        go s.aggregateMessages(user)
     }
 }
 
@@ -71,6 +117,7 @@ func (s *Server) userDisconnected() {
         for i, u := range s.users {
             if u == user {
                 s.users = append(s.users[:i], s.users[i+1:]...)
+                s.outputStore.RemoveOutput(user.Id)
                 log.Println("Remove user", user.Id)
                 break
             }
@@ -91,6 +138,7 @@ func (s *Server) Start(done <-chan interface{}) error {
         return errors.New("Need to add transport before calling Start")
     }
 
+    go s.startRouter()
     go s.userConnected()
     go s.userDisconnected()
     for url, t := range s.transports {
@@ -103,6 +151,7 @@ func (s *Server) Start(done <-chan interface{}) error {
     <-done
     close(s.connected)
     close(s.disconnected)
+    close(s.aggregate)
     return nil
 }
 
