@@ -1,6 +1,9 @@
 package common
 
-import "log"
+import (
+    "log"
+    "time"
+)
 
 const (
     TEXT   = 1
@@ -10,24 +13,28 @@ const (
 type DataType int
 
 type Message struct {
-    from *User
-    to   *User
+    from     string
+    to       string
 
-    // Possible values:
-    //  control
-    //  message
-    //  file
-    messageType string
+    cmdType  string
+    cmd      string
+
+    expireDate time.Time
+
     dataType DataType
     data []byte
 }
 
-func NewMessage(from *User, to *User, messageType string,
+func NewMessage(from string, to string,
+                cmdType string, cmd string,
+                expireDate time.Time,
                 dataType DataType, data []byte) Message {
     return Message{
         from: from,
         to: to,
-        messageType: messageType,
+        cmdType: cmdType,
+        cmd: cmd,
+        expireDate: expireDate,
         dataType: dataType,
         data: data,
     }
@@ -51,12 +58,24 @@ func (m Message) Binary() []byte {
     return m.data
 }
 
-func (m Message) From() *User {
+func (m Message) From() string {
     return m.from
 }
 
-func (m Message) To() *User {
+func (m Message) To() string {
     return m.to
+}
+
+func (m Message) CmdType() string {
+    return m.cmdType
+}
+
+func (m Message) Cmd() string {
+    return m.cmd
+}
+
+func (m Message) ExpireDate() time.Time {
+    return m.expireDate
 }
 
 func (m Message) DataType() DataType {
@@ -69,6 +88,6 @@ func (m Message) Raw() []byte {
 
 type User struct {
     Id  string
-    In      chan Message
-    Out     chan Message
+    In      chan *Message
+    Out     chan *Message
 }
