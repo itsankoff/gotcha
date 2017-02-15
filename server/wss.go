@@ -44,8 +44,8 @@ func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
     id := strconv.FormatInt(now, 10)
     user := &common.User{
         Id: id,
-        In: make(chan common.Message),
-        Out: make(chan common.Message),
+        In: make(chan *common.Message),
+        Out: make(chan *common.Message),
     }
 
     wss.connections[user] = conn
@@ -127,15 +127,16 @@ func (wss *WebSocketServer) OnUserDisconnected(handler chan<- *common.User) {
 }
 
 func (wss WebSocketServer) encodeMessage(u *common.User,
-                                         msg common.Message) ([]byte, int) {
+                                         msg *common.Message) ([]byte, int) {
     return msg.Raw(), int(msg.DataType())
 }
 
 func (wss WebSocketServer) decodeMessage(u *common.User,
                                          data []byte,
-                                         dataType int) (common.Message, error) {
+                                         dataType int) (*common.Message, error) {
     // TODO: Parse message data
     //       And find who is the destination
-    message := common.NewMessage(u, u, "message", common.DataType(dataType), data)
-    return message, nil
+    message := common.NewMessage(u.Id, u.Id, "message", "send_message", time.Now(),
+                                 common.DataType(dataType), data)
+    return &message, nil
 }
