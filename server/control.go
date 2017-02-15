@@ -3,15 +3,20 @@ package server
 import (
     "github.com/itsankoff/gotcha/common"
     "log"
+    "encoding/json"
 )
 
 type Control struct {
-    input chan *common.Message
+    input           chan *common.Message
+    groups          []*Group
+    outputStore     *OutputStore
 }
 
-func NewControl(input chan *common.Message) *Control {
+func NewControl(input chan *common.Message,
+                outputStore *OutputStore) *Control {
     c := &Control{
         input: input,
+        outputStore: outputStore,
     }
 
     go c.listen()
@@ -22,24 +27,41 @@ func (c Control) listen() {
     select {
     case msg := <-c.input:
         log.Println("Control received", msg)
+
         valid := c.validate(msg)
         if valid {
-            cmd := msg.Cmd()
-            switch(cmd) {
-            case "register":
-            case "auth":
-            case "list_contacts":
-            case "add_contact":
-            case "remove_contact":
-            case "create_group":
-            case "add_to_group":
-            case "remove_from_group":
-            case "delete_group":
-            case "list_groups":
-            case "join_group":
-            case "leave_group":
-            default:
-                log.Println("Unknown control command", cmd)
+            var payload map[string]interface{}
+            err := json.Unmarshal(msg.Raw(), &payload)
+            if err == nil {
+                cmd := msg.Cmd()
+                switch(cmd) {
+                case "register":
+                case "auth":
+                case "list_contacts":
+                case "add_contact":
+                case "remove_contact":
+                case "create_group":
+                    groupId := c.CreateGroup()
+                    c.AddToGroup(groupId, msg.From())
+                case "add_to_group":
+                    groupId := payload["group_id"]
+                    userId := payload["user_id"]
+                    c.AddToGroup(groupId.(string), userId.(string))
+                case "remove_from_group":
+                    groupId := payload["group_id"].(string)
+                    userId := payload["user_id"].(string)
+                    c.RemoveFromGroup(groupId, userId)
+                case "delete_group":
+                    groupId := payload["group_id"].(string)
+                    c.DeleteGroup(groupId)
+                case "list_groups":
+                case "join_group":
+                case "leave_group":
+                default:
+                    log.Println("Unknown control command", cmd)
+                }
+            } else {
+                log.Println("Failed to decode control message payload", msg)
             }
         } else {
             log.Println("Invalid control message", msg)
@@ -49,6 +71,16 @@ func (c Control) listen() {
 
 func (c Control) validate(msg *common.Message) bool {
     return true
+}
+
+func (c Control) findGroup(groupId string) *Group {
+    for _, g := range c.groups {
+        if g.Id == groupId {
+            return g
+        }
+    }
+
+    return nil
 }
 
 func (c Control) RegisterUser(user string, password string) *common.User {
@@ -71,30 +103,58 @@ func (c Control) RemoveContact(user *common.User, contact *common.User) bool {
     return false
 }
 
-func (c Control) CreateGroup(user *common.User) (groupId string) {
-    return
+func (c *Control) CreateGroup() string {
+    group := NewGroup()
+    c.groups = append(c.groups, group)
+    c.outputStore.AddOutput(group.Id, group.Out)
+    return group.Id
 }
 
-func (c Control) AddToGroup(user *common.User, groupId string) bool {
-    return false
+func (c Control) AddToGroup(groupId string, userId string) bool {
+    group := c.findGroup(groupId)
+    if group == nil {
+        log.Println("Failed to add user. No group with id", groupId, userId)
+        return false
+    }
+
+    userOutput := c.outputStore.GetOutput(userId)
+    if userOutput == nil {
+        log.Println("Failed to add user to group. No user output",
+                    groupId, userId)
+        return false
+    }
+
+    return group.AddOutput(userId, userOutput)
 }
 
-func (c Control) RemoveFromGroup(user *common.User, groupId string) bool {
-    return false
+func (c Control) RemoveFromGroup(user string, groupId string) bool {
+    group := c.findGroup(groupId)
+    if group == nil {
+        log.Println("Failed to remove user. No group with id", groupId, user)
+        return false
+    }
+
+    return group.RemoveOutput(user)
 }
 
-func (c Control) DeleteGroup(groupId string) bool {
+func (c *Control) DeleteGroup(groupId string) bool {
+    for i, group:= range c.groups {
+        if group.Id == groupId {
+            c.groups = append(c.groups[:i], c.groups[i+1:]...)
+            c.outputStore.RemoveOutput(group.Id)
+            close(group.Out)
+            return true
+        }
+    }
+
     return false
 }
 
 func (c Control) ListGroups(user *common.User) *[]string {
-    return &[]string{}
-}
+    groupIds := []string{}
+    for _, g := range c.groups {
+        groupIds = append(groupIds, g.Id)
+    }
 
-func (c Control) JoinGroup(user *common.User, groupId string) bool {
-    return false
-}
-
-func (c Control) LeaveGroup(user *common.User, groupId string) bool {
-    return false
+    return &groupIds
 }
