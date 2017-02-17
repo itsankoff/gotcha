@@ -129,7 +129,13 @@ func (wss *WebSocketServer) OnUserDisconnected(handler chan<- *common.User) {
 
 func (wss WebSocketServer) encodeMessage(u *common.User,
                                          msg *common.Message) ([]byte, int) {
-    return msg.Binary(), int(msg.DataType())
+    json, err := msg.Json()
+    if err != nil {
+        log.Println("Failed to encode message", err)
+        return []byte{}, 0
+    }
+
+    return json, int(msg.DataType())
 }
 
 func (wss WebSocketServer) decodeMessage(u *common.User,
