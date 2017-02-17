@@ -26,6 +26,7 @@ COMMAND_TYPE:
     0 - message,
     1 - control,
     2 - file
+    3 - auth
 
 COMMANDS:
     register,

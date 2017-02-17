@@ -36,8 +36,6 @@ func (c Control) listen() {
                 if err == nil {
                     cmd := msg.Cmd()
                     switch(cmd) {
-                    case "register":
-                    case "auth":
                     case "list_contacts":
                     case "add_contact":
                     case "remove_contact":

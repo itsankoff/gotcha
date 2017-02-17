@@ -2,8 +2,9 @@ package server
 
 import (
     "log"
-    "github.com/itsankoff/gotcha/common"
+    "encoding/json"
     "errors"
+    "github.com/itsankoff/gotcha/common"
 )
 
 
@@ -18,6 +19,7 @@ type Server struct {
     control             *Control
     messanger           *Messanger
     history             *History
+    authRegistry        *AuthRegistry
     outputStore         *OutputStore
 }
 
@@ -46,6 +48,8 @@ func New() *Server {
     s.messageHandlers["message"] = messangerInput
     s.messageHandlers["file"] = messangerInput
 
+    s.authRegistry = NewAuthRegistry()
+
     return s
 }
 
@@ -66,11 +70,74 @@ func (s *Server) startRouter() {
 }
 
 func (s *Server) aggregateMessages(user *common.User) {
+    // 0: connected
+    // 1: registered
+    // 2: authenticated
+    var state int
     for {
         select {
         case msg := <-user.In:
-            log.Println("Forward message to aggregate", user.Id)
-            s.aggregate <- msg
+            switch state {
+            case 0:
+                if msg.CmdType() != "auth" && msg.Cmd() != "register" {
+                    log.Printf("Wrong message %s for state %d", msg.Cmd(), state)
+                    user.Disconnect()
+                    return
+                }
+
+                var packet map[string]interface{}
+                err := json.Unmarshal([]byte(msg.String()), &packet)
+                if err != nil {
+                    log.Println("Failed to parse register message data", err)
+                    user.Disconnect()
+                    return
+                }
+
+                username := packet["username"].(string)
+                pass := packet["password"].(string)
+                userId, registered := s.authRegistry.Register(username, pass)
+                if !registered {
+                    log.Println("Registration for %s failed", username)
+                    user.Disconnect()
+                    return
+                }
+
+                response := common.NewResponse(msg, userId)
+                user.Out <- response
+                state = 1
+            case 1:
+                if msg.CmdType() != "auth" || msg.Cmd() != "auth" {
+                    log.Printf("Wrong message %s for state %d", msg.Cmd(), state)
+                    user.Disconnect()
+                    return
+                }
+
+                var packet map[string]interface{}
+                err := json.Unmarshal([]byte(msg.String()), &packet)
+                if err != nil {
+                    log.Println("Failed to parse auth message data", err)
+                    user.Disconnect()
+                    return
+                }
+
+                userId := packet["user_id"].(string)
+                pass := packet["password"].(string)
+                authenticated := s.authRegistry.Authenticate(userId, pass)
+                if !authenticated {
+                    log.Println("Authentication for %s failed", userId)
+                    user.Disconnect()
+                    return
+                }
+
+                s.outputStore.AddOutput(userId, user.Out)
+                state = 2
+
+                response := common.NewResponse(msg, "authenticated")
+                user.Out <- response
+            case 2:
+                log.Println("Forward message to aggregate", msg.From())
+                s.aggregate <- msg
+            }
         }
     }
 }
@@ -108,25 +175,29 @@ func (s *Server) RemoveTransport(host string) error {
 
 func (s *Server) userConnected() {
     log.Println("Start user connected observer")
-    select {
-    case user := <-s.connected:
-        s.users = append(s.users, user)
-        s.outputStore.AddOutput(user.Id, user.Out)
-        log.Println("Add user to server")
-        go s.aggregateMessages(user)
+    for {
+        select {
+        case user := <-s.connected:
+            s.users = append(s.users, user)
+            s.outputStore.AddOutput(user.Id, user.Out)
+            log.Println("Add user to server")
+            go s.aggregateMessages(user)
+        }
     }
 }
 
 func (s *Server) userDisconnected() {
     log.Println("Start user disconnected observer")
-    select {
-    case user := <-s.disconnected:
-        for i, u := range s.users {
-            if u == user {
-                s.users = append(s.users[:i], s.users[i+1:]...)
-                s.outputStore.RemoveOutput(user.Id)
-                log.Println("Remove user", user.Id)
-                break
+    for {
+        select {
+        case user := <-s.disconnected:
+            for i, u := range s.users {
+                if u == user {
+                    s.users = append(s.users[:i], s.users[i+1:]...)
+                    s.outputStore.RemoveOutput(user.Id)
+                    log.Println("Remove user", user.Id)
+                    break
+                }
             }
         }
     }
