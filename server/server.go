@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/itsankoff/gotcha/common"
 	"log"
@@ -90,8 +89,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 					return
 				}
 
-				var packet map[string]interface{}
-				err := json.Unmarshal([]byte(msg.String()), &packet)
+				packet, err := msg.ParseJsonData()
 				if err != nil {
 					log.Println("Failed to parse register message data", err)
 					user.Disconnect()
@@ -117,8 +115,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 					return
 				}
 
-				var packet map[string]interface{}
-				err := json.Unmarshal([]byte(msg.String()), &packet)
+				packet, err := msg.ParseJsonData()
 				if err != nil {
 					log.Println("Failed to parse auth message data", err)
 					user.Disconnect()
