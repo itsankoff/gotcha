@@ -2,7 +2,8 @@
 * Add tests for wss.go
 * Generate global unique userIds and translate them when use specific trasnport
 (done) Create management protocol between client and server
-(inprogress) Implement management protocol in server
-* Implement management protocol in client
+(done) Implement encode/decode messages in server
+(inprogress) Implement control protocol for server
+* Implement control protocol in cmd client
 * Implement secure channels
 * Documentation
