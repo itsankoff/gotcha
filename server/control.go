@@ -31,7 +31,7 @@ func (c Control) listen() {
         valid := c.validate(msg)
         if valid {
             var payload map[string]interface{}
-            err := json.Unmarshal(msg.Raw(), &payload)
+            err := json.Unmarshal(msg.Binary(), &payload)
             if err == nil {
                 cmd := msg.Cmd()
                 switch(cmd) {
