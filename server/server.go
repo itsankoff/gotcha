@@ -81,6 +81,11 @@ func (s *Server) aggregateMessages(user *common.User) {
 	for {
 		select {
 		case msg := <-user.In:
+			if msg == nil {
+				log.Println("Nil message in aggregate")
+				return
+			}
+
 			switch state {
 			case 0:
 				if msg.CmdType() != "auth" && msg.Cmd() != "register" {
