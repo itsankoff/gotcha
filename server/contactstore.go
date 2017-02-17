@@ -18,3 +18,7 @@ func (c *ContactStore) RemoveContact(userId string, contactId string) bool {
 func (c *ContactStore) ListContacts(userId string) ([]string, bool) {
 	return []string{}, true
 }
+
+func (c *ContactStore) SearchContact(userId string, contactName string) string {
+	return ""
+}
