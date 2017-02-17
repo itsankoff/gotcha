@@ -35,8 +35,10 @@ func New() *Server {
 	}
 
 	s.outputStore = NewOutputStore()
-	s.history = NewHistory()
 	s.contactStore = NewContactStore()
+
+	historyInput := make(chan *common.Message)
+	s.history = NewHistory(historyInput, s.outputStore)
 
 	// register control handler
 	controlInput := make(chan *common.Message)
@@ -49,6 +51,7 @@ func New() *Server {
 	s.messanger = NewMessanger(messangerInput, s.history, s.outputStore)
 	s.messageHandlers["message"] = messangerInput
 	s.messageHandlers["file"] = messangerInput
+	s.messageHandlers["history"] = historyInput
 
 	s.authRegistry = NewAuthRegistry()
 
