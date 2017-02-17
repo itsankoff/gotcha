@@ -95,6 +95,12 @@ func (m Message) DataType() DataType {
     return m.dataType
 }
 
+func NewResponse(msg *Message, response string) *Message {
+    responseMsg := NewMessage(msg.from, msg.to, msg.cmdType, msg.cmd,
+                              time.Time{}, TEXT, response)
+    return &responseMsg
+}
+
 type User struct {
     Id  string
     In      chan *Message
