@@ -36,10 +36,10 @@ func (m *Messanger) listen() {
                     // change msg content to file url (plus token)
                 }
 
-                if !(msg.ExpireDate().IsZero()) {
+                if msg.ExpireDate().IsZero() {
                     m.history.AddMessage(msg)
                 } else {
-                    log.Println("Message expire date is not zero", msg.ExpireDate())
+                    log.Println("Temporary Message")
                 }
 
                 m.outputStore.Send(msg)
