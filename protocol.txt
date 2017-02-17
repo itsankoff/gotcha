@@ -42,14 +42,9 @@ COMMANDS:
     remove_from_group,
     delete_group,
     list_groups,
-    join_group,
-    leave_group,
 
     send_message,
-    send_tmp_message,
     send_file,
-    send_group_file,
-    send_tmp_file,
 
     get_history
 
