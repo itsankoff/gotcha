@@ -31,15 +31,16 @@ func New() *Server {
         messageHandlers: make(map[string]chan *common.Message),
     }
 
+    s.outputStore = NewOutputStore()
+    s.history = NewHistory()
+
     // register control handler
     controlInput := make(chan *common.Message)
-    s.control = NewControl(controlInput)
+    s.control = NewControl(controlInput, s.outputStore)
     s.messageHandlers["control"] = controlInput
 
     // register message handler
     messangerInput := make(chan *common.Message)
-    s.history = NewHistory()
-    s.outputStore = NewOutputStore()
 
     s.messanger = NewMessanger(messangerInput, s.history, s.outputStore)
     s.messageHandlers["message"] = messangerInput
