@@ -1,8 +1,9 @@
 (done) Generate global unique userIds and translate them when use specific trasnport
 (done) Create management protocol between client and server
 (done) Implement encode/decode messages in server
+(done) Implement control protocol in cmd client
 (inprogress) Implement control protocol for server
-(inprogress) Implement control protocol in cmd client
+* Implement send message and send file for client
 * Implement client interactive mode
 * Implement secure channels
 * Documentation
