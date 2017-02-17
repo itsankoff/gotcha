@@ -23,10 +23,14 @@ Server message structure:
 }
 
 COMMAND_TYPE:
-    0 - message,
-    1 - control,
-    2 - file
-    3 - auth
+    auth,
+
+    control,
+
+    message,
+    file,
+
+    history
 
 COMMANDS:
     register,
