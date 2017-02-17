@@ -129,14 +129,15 @@ func (c Control) AddToGroup(groupId string, userId string) bool {
     return group.AddOutput(userId, userOutput)
 }
 
-func (c Control) RemoveFromGroup(user string, groupId string) bool {
+func (c Control) RemoveFromGroup(groupId string, userId string) bool {
     group := c.findGroup(groupId)
     if group == nil {
-        log.Println("Failed to remove user. No group with id", groupId, user)
+        log.Printf("Failed to remove user %s from group %s. No group with id",
+                   userId, groupId)
         return false
     }
 
-    return group.RemoveOutput(user)
+    return group.RemoveOutput(userId)
 }
 
 func (c *Control) DeleteGroup(groupId string) bool {
