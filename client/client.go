@@ -2,7 +2,6 @@ package client
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -11,8 +10,8 @@ type AsyncHandler interface {
 }
 
 type Client struct {
-	host string
-	port int16
+	transport Transport
+	contacts  []string
 }
 
 type ClientHandler interface {
@@ -24,39 +23,38 @@ type ClientHandler interface {
 	OnGroupFile(userId int64, file File)
 }
 
-func New() *Client {
-	return &Client{}
+func New(transport Transport) *Client {
+	return &Client{
+		transport: transport,
+	}
 }
 
-// Connect the client to server on host
-// host scheme wss://<host>:<port>
 func (c *Client) Connect(host string) (bool, error) {
-	fmt.Println("Hello client")
-	return false, errors.New("Not Implemented")
+	return c.transport.Connect(host)
 }
 
-func (c *Client) ConnectAsync(host string, handler AsyncHandler) {
-
+func (c *Client) ConnectAsync(host string) chan bool {
+	return c.transport.ConnectAsync(host)
 }
 
 func (c *Client) Disconnect() {
-
+	c.transport.Disconnect()
 }
 
 func (c *Client) Reconnect() (bool, error) {
-	return false, errors.New("Not Implemented")
+	return c.transport.Reconnect()
 }
 
-func (c *Client) ReconnectAsync(handler AsyncHandler) {
-
+func (c *Client) ReconnectAsync() chan bool {
+	return c.transport.ReconnectAsync()
 }
 
 func (c *Client) Register(username, password string) (bool, error) {
 	return false, errors.New("Not Implemented")
 }
 
-func (c *Client) ListContacts() ([]*Contact, error) {
-	return []*Contact{}, errors.New("Not Implemented")
+func (c *Client) ListContacts() ([]string, error) {
+	return []string{}, errors.New("Not Implemented")
 }
 
 func (c *Client) SearchContact(username string) (int64, error) {
