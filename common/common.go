@@ -11,7 +11,13 @@ const (
 	BINARY = 2
 )
 
+const (
+	STATUS_OK    = 1
+	STATUS_ERROR = 2
+)
+
 type DataType int
+type Status int
 
 type Message struct {
 	from string
@@ -19,6 +25,8 @@ type Message struct {
 
 	cmdType string
 	cmd     string
+
+	status Status // only for server -> client messages
 
 	expireDate time.Time
 
@@ -89,6 +97,10 @@ func (m Message) CmdType() string {
 
 func (m Message) Cmd() string {
 	return m.cmd
+}
+
+func (m Message) Status() Status {
+	return m.status
 }
 
 func (m Message) ExpireDate() time.Time {
