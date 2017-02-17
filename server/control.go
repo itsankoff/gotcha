@@ -41,14 +41,19 @@ func (c Control) listen() {
 						response := common.NewResponse(msg, contacts)
 						c.outputStore.Send(response)
 					case "add_contact":
-						contact := payload["contact_id"].(string)
-						added := c.AddContact(msg.From(), contact)
+						contactId := payload["contact_id"].(string)
+						added := c.AddContact(msg.From(), contactId)
 						response := common.NewResponse(msg, added)
 						c.outputStore.Send(response)
 					case "remove_contact":
-						contact := payload["contact_id"].(string)
-						removed := c.RemoveContact(msg.From(), contact)
+						contactId := payload["contact_id"].(string)
+						removed := c.RemoveContact(msg.From(), contactId)
 						response := common.NewResponse(msg, removed)
+						c.outputStore.Send(response)
+					case "search_contact":
+						contactName := payload["contact_name"].(string)
+						contactId := c.SearchContact(msg.From(), contactName)
+						response := common.NewResponse(msg, contactId)
 						c.outputStore.Send(response)
 					case "create_group":
 						groupId := c.CreateGroup()
@@ -109,16 +114,22 @@ func (c Control) ListContacts(user string) ([]string, bool) {
 	return contacts, listed
 }
 
-func (c Control) AddContact(user string, contact string) bool {
-	added := c.contactStore.AddContact(user, contact)
-	log.Printf("Add contact %s for user %s %t", contact, user)
+func (c Control) AddContact(user string, contactId string) bool {
+	added := c.contactStore.AddContact(user, contactId)
+	log.Printf("Add contact %s for user %s %t", contactId, user)
 	return added
 }
 
-func (c Control) RemoveContact(user string, contact string) bool {
-	removed := c.contactStore.RemoveContact(user, contact)
-	log.Printf("Remove contact %s for user %s %t", contact, user)
+func (c Control) RemoveContact(user string, contactId string) bool {
+	removed := c.contactStore.RemoveContact(user, contactId)
+	log.Printf("Remove contact %s for user %s %t", contactId, user)
 	return removed
+}
+
+func (c Control) SearchContact(user string, contactName string) string {
+	contactId := c.contactStore.SearchContact(user, contactName)
+	log.Printf("Seach contact %s for user %s %t", contactName, user)
+	return contactId
 }
 
 func (c *Control) CreateGroup() string {
