@@ -3,6 +3,7 @@ package common
 import (
     "log"
     "time"
+    "encoding/json"
 )
 
 const (
@@ -56,6 +57,18 @@ func (m Message) Binary() []byte {
     }
 
     return m.data.([]byte)
+}
+
+func (m Message) Json() ([]byte, error) {
+    msg := make(map[string]interface{})
+    msg["from"] = m.from
+    msg["to"] = m.to
+    msg["cmd_type"] = m.cmdType
+    msg["cmd"] = m.cmd
+    msg["data_type"] = m.dataType
+    msg["data"] = m.data
+
+    return json.Marshal(msg)
 }
 
 func (m Message) From() string {
