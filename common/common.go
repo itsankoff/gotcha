@@ -99,4 +99,18 @@ type User struct {
     Id  string
     In      chan *Message
     Out     chan *Message
+    Done    chan interface{}
+}
+
+func NewUser(userId string) *User {
+    return &User{
+        Id: userId,
+        In: make(chan *Message),
+        Out: make(chan *Message),
+        Done: make(chan interface{}),
+    }
+}
+
+func (u *User) Disconnect() {
+    close(u.Done)
 }
