@@ -1,0 +1,57 @@
+JSON-BASED protocol
+
+Client message structure:
+{
+    cmd_type:       COMMAND_TYPE,
+    cmd:            COMMANDS,
+    from:           string,
+    to:             string,
+    expire_period:  int,      (in seconds)
+    data_type:      DATA_TYPE,
+    data:           bytes | string
+}
+
+Server message structure:
+{
+    cmd_type:   COMMAND_TYPE,
+    cmd:        COMMANDS,
+    [status]:   STATUS, // if cmd_type is control
+    from:       string,
+    to:         string,
+    data_type:  DATA_TYPE,
+    data:       ....
+}
+
+COMMAND_TYPE:
+    0 - message,
+    1 - control,
+    2 - file
+    3 - auth
+
+COMMANDS:
+    register,
+    auth,
+    
+    list_contacts,
+    search_contact,
+    add_contact,
+    remove_contact,
+    
+    create_group,
+    add_to_group,
+    remove_from_group,
+    delete_group,
+    list_groups,
+
+    send_message,
+    send_file,
+
+    get_history
+
+DATA_TYPE:
+    0 - TEXT,
+    1 - BINARY
+
+STATUS:
+    success,
+    fail

@@ -1,8 +1,9 @@
 * Use flag lib to parse command line for both server and cmd client
 * Add tests for wss.go
 * Generate global unique userIds and translate them when use specific trasnport
-* Create management protocol between client and server
-* Implement management protocol in server
-* Implement management protocol in client
+(done) Create management protocol between client and server
+(done) Implement encode/decode messages in server
+(inprogress) Implement control protocol for server
+* Implement control protocol in cmd client
 * Implement secure channels
 * Documentation
