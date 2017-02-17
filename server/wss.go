@@ -85,6 +85,7 @@ func (wss *WebSocketServer) inputHandler(user *common.User, conn *websocket.Conn
         }
 
         message, err := wss.decodeMessage(user, msg, msgType)
+        log.Println("Message from ws", user.Id)
         if err != nil {
             log.Println("Failed to decode message", msgType, msg)
             wss.removeConnection(conn)
@@ -97,13 +98,16 @@ func (wss *WebSocketServer) inputHandler(user *common.User, conn *websocket.Conn
 
 func (wss *WebSocketServer) outputHandler(user *common.User, conn *websocket.Conn) {
     log.Println("Start websocket output handler for", user.Id)
-    select {
-    case msg := <-user.Out:
-        message, msgType := wss.encodeMessage(user, msg)
-        if err := conn.WriteMessage(msgType, message); err != nil {
-            log.Println("Connection write error", err.Error())
-            wss.removeConnection(conn)
-            return
+    for {
+        select {
+        case msg := <-user.Out:
+            log.Println("Message in output channel for", user.Id)
+            message, msgType := wss.encodeMessage(user, msg)
+            if err := conn.WriteMessage(msgType, message); err != nil {
+                log.Println("Connection write error", err.Error())
+                wss.removeConnection(conn)
+                return
+            }
         }
     }
 }

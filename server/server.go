@@ -50,22 +50,28 @@ func New() *Server {
 }
 
 func (s *Server) startRouter() {
-    select {
-    case msg := <-s.aggregate:
-        cmdType := msg.CmdType()
-        handler, ok := s.messageHandlers[cmdType]
-        if ok {
-            handler <- msg
-        } else {
-            log.Println("No registered handler for cmd type", cmdType)
+    for {
+        select {
+        case msg := <-s.aggregate:
+            log.Println("Message in aggregate", msg.From())
+            cmdType := msg.CmdType()
+            handler, ok := s.messageHandlers[cmdType]
+            if ok {
+                handler <- msg
+            } else {
+                log.Println("No registered handler for cmd type", cmdType)
+            }
         }
     }
 }
 
 func (s *Server) aggregateMessages(user *common.User) {
-    select {
-    case msg := <-user.In:
-        s.aggregate <- msg
+    for {
+        select {
+        case msg := <-user.In:
+            log.Println("Forward message to aggregate", user.Id)
+            s.aggregate <- msg
+        }
     }
 }
 
@@ -129,7 +135,6 @@ func (s *Server) userDisconnected() {
 func (s Server) echoHandler(user *common.User) {
     select {
     case msg := <-user.In:
-        log.Println("Message from user", user.Id, msg.String())
         user.Out<-msg
     }
 }

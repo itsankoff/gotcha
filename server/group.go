@@ -23,10 +23,12 @@ func NewGroup() *Group {
 }
 
 func (g *Group) listen() {
-    select {
-    case msg := <-g.Out:
-        for _, out := range g.outputs {
-            out<- msg
+    for {
+        select {
+        case msg := <-g.Out:
+            for _, out := range g.outputs {
+                out<- msg
+            }
         }
     }
 }

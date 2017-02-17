@@ -24,47 +24,49 @@ func NewControl(input chan *common.Message,
 }
 
 func (c Control) listen() {
-    select {
-    case msg := <-c.input:
-        log.Println("Control received", msg)
+    for {
+        select {
+        case msg := <-c.input:
+            log.Println("Control received", msg)
 
-        valid := c.validate(msg)
-        if valid {
-            var payload map[string]interface{}
-            err := json.Unmarshal(msg.Binary(), &payload)
-            if err == nil {
-                cmd := msg.Cmd()
-                switch(cmd) {
-                case "register":
-                case "auth":
-                case "list_contacts":
-                case "add_contact":
-                case "remove_contact":
-                case "create_group":
-                    groupId := c.CreateGroup()
-                    c.AddToGroup(groupId, msg.From())
-                case "add_to_group":
-                    groupId := payload["group_id"]
-                    userId := payload["user_id"]
-                    c.AddToGroup(groupId.(string), userId.(string))
-                case "remove_from_group":
-                    groupId := payload["group_id"].(string)
-                    userId := payload["user_id"].(string)
-                    c.RemoveFromGroup(groupId, userId)
-                case "delete_group":
-                    groupId := payload["group_id"].(string)
-                    c.DeleteGroup(groupId)
-                case "list_groups":
-                case "join_group":
-                case "leave_group":
-                default:
-                    log.Println("Unknown control command", cmd)
+            valid := c.validate(msg)
+            if valid {
+                var payload map[string]interface{}
+                err := json.Unmarshal(msg.Binary(), &payload)
+                if err == nil {
+                    cmd := msg.Cmd()
+                    switch(cmd) {
+                    case "register":
+                    case "auth":
+                    case "list_contacts":
+                    case "add_contact":
+                    case "remove_contact":
+                    case "create_group":
+                        groupId := c.CreateGroup()
+                        c.AddToGroup(groupId, msg.From())
+                    case "add_to_group":
+                        groupId := payload["group_id"]
+                        userId := payload["user_id"]
+                        c.AddToGroup(groupId.(string), userId.(string))
+                    case "remove_from_group":
+                        groupId := payload["group_id"].(string)
+                        userId := payload["user_id"].(string)
+                        c.RemoveFromGroup(groupId, userId)
+                    case "delete_group":
+                        groupId := payload["group_id"].(string)
+                        c.DeleteGroup(groupId)
+                    case "list_groups":
+                    case "join_group":
+                    case "leave_group":
+                    default:
+                        log.Println("Unknown control command", cmd)
+                    }
+                } else {
+                    log.Println("Failed to decode control message payload", msg)
                 }
             } else {
-                log.Println("Failed to decode control message payload", msg)
+                log.Println("Invalid control message", msg)
             }
-        } else {
-            log.Println("Invalid control message", msg)
         }
     }
 }

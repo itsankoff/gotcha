@@ -25,25 +25,27 @@ func NewMessanger(input chan *common.Message,
 }
 
 func (m *Messanger) listen() {
-    select {
-    case msg := <-m.input:
-        log.Println("Message received", msg)
-        valid := m.validate(msg)
-        if valid {
-            if msg.Cmd() == "file" {
-                // add file to file store
-                // change msg content to file url (plus token)
-            }
+    for {
+        select {
+        case msg := <-m.input:
+            log.Println("Message received")
+            valid := m.validate(msg)
+            if valid {
+                if msg.Cmd() == "file" {
+                    // add file to file store
+                    // change msg content to file url (plus token)
+                }
 
-            if !(msg.ExpireDate().IsZero()) {
-                m.history.AddMessage(msg)
+                if !(msg.ExpireDate().IsZero()) {
+                    m.history.AddMessage(msg)
+                } else {
+                    log.Println("Message expire date is not zero", msg.ExpireDate())
+                }
+
+                m.outputStore.Send(msg)
             } else {
-                log.Println("Message expire date is not zero", msg.ExpireDate())
+                log.Println("Invalid instant message", msg)
             }
-
-            m.outputStore.Send(msg)
-        } else {
-            log.Println("Invalid instant message", msg)
         }
     }
 }
