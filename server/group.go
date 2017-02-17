@@ -15,6 +15,7 @@ type Group struct {
 func NewGroup() *Group {
     group := &Group{
         Id: strconv.FormatInt(time.Now().Unix(), 10),
+        Out: make(chan *common.Message),
         outputs: make(map[string]chan<- *common.Message),
     }
 
