@@ -15,11 +15,13 @@ type Server struct {
 	aggregate       chan *common.Message
 	messageHandlers map[string]chan *common.Message
 
-	control      *Control
-	messanger    *Messanger
-	history      *History
-	authRegistry *AuthRegistry
 	outputStore  *OutputStore
+	history      *History
+	contactStore *ContactStore
+	authRegistry *AuthRegistry
+
+	control   *Control
+	messanger *Messanger
 }
 
 func New() *Server {
@@ -34,10 +36,11 @@ func New() *Server {
 
 	s.outputStore = NewOutputStore()
 	s.history = NewHistory()
+	s.contactStore = NewContactStore()
 
 	// register control handler
 	controlInput := make(chan *common.Message)
-	s.control = NewControl(controlInput, s.outputStore)
+	s.control = NewControl(controlInput, s.outputStore, s.contactStore)
 	s.messageHandlers["control"] = controlInput
 
 	// register message handler
