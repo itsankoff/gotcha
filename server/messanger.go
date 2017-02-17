@@ -53,23 +53,3 @@ func (m *Messanger) listen() {
 func (m Messanger) validate(msg *common.Message) bool {
 	return true
 }
-
-func (m Messanger) SendMessage(msg *common.Message) bool {
-	return false
-}
-
-func (m Messanger) SendTmpMessage(msg *common.Message) bool {
-	return false
-}
-
-func (m Messanger) SendFile(msg *common.Message) bool {
-	return false
-}
-
-func (m Messanger) SendGroupFile(msg *common.Message) bool {
-	return false
-}
-
-func (m Messanger) SendTmpFile(msg *common.Message) bool {
-	return false
-}
