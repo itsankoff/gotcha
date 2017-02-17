@@ -2,13 +2,13 @@ JSON-BASED protocol
 
 Client message structure:
 {
-    cmd_type:   COMMAND_TYPE,
-    cmd:        COMMANDS,
-    from:       string,
-    to:         string,
-    command:    COMMAND_TYPE,
-    data_type:  DATA_TYPE,
-    data:       ...
+    cmd_type:       COMMAND_TYPE,
+    cmd:            COMMANDS,
+    from:           string,
+    to:             string,
+    expire_period:  int,      (in seconds)
+    data_type:      DATA_TYPE,
+    data:           bytes | string
 }
 
 Server message structure:
