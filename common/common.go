@@ -22,13 +22,13 @@ type Message struct {
     expireDate time.Time
 
     dataType DataType
-    data []byte
+    data interface{}
 }
 
 func NewMessage(from string, to string,
                 cmdType string, cmd string,
                 expireDate time.Time,
-                dataType DataType, data []byte) Message {
+                dataType DataType, data interface{}) Message {
     return Message{
         from: from,
         to: to,
@@ -46,7 +46,7 @@ func (m Message) String() string {
         return ""
     }
 
-    return string(m.data)
+    return m.data.(string)
 }
 
 func (m Message) Binary() []byte {
@@ -55,7 +55,7 @@ func (m Message) Binary() []byte {
         return []byte{}
     }
 
-    return m.data
+    return m.data.([]byte)
 }
 
 func (m Message) From() string {
@@ -80,10 +80,6 @@ func (m Message) ExpireDate() time.Time {
 
 func (m Message) DataType() DataType {
     return m.dataType
-}
-
-func (m Message) Raw() []byte {
-    return m.data
 }
 
 type User struct {
