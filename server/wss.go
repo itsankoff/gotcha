@@ -4,6 +4,7 @@ import (
     "log"
     "time"
     "strconv"
+    "encoding/json"
     "net/http"
     "github.com/gorilla/websocket"
     "github.com/itsankoff/gotcha/common"
@@ -128,15 +129,33 @@ func (wss *WebSocketServer) OnUserDisconnected(handler chan<- *common.User) {
 
 func (wss WebSocketServer) encodeMessage(u *common.User,
                                          msg *common.Message) ([]byte, int) {
-    return msg.Raw(), int(msg.DataType())
+    return msg.Binary(), int(msg.DataType())
 }
 
 func (wss WebSocketServer) decodeMessage(u *common.User,
                                          data []byte,
                                          dataType int) (*common.Message, error) {
-    // TODO: Parse message data
-    //       And find who is the destination
-    message := common.NewMessage(u.Id, u.Id, "message", "send_message", time.Now(),
-                                 common.DataType(dataType), data)
+    var packet map[string]interface{}
+    err := json.Unmarshal(data, &packet)
+    if err != nil {
+        return nil, err
+    }
+
+    expire_period, exists := packet["expire_period"].(int)
+    var expire_date time.Time
+    if exists {
+        expire_date = time.Now().Add(time.Duration(expire_period) * time.Second)
+    }
+
+    messageFrom := packet["from"].(string)
+    messageTo := packet["to"].(string)
+    messageCmdType := packet["cmd_type"].(string)
+    messageCmd := packet["cmd"].(string)
+    messageDataType := common.DataType(packet["data_type"].(float64))
+
+    message := common.NewMessage(messageFrom, messageTo,
+                                 messageCmdType, messageCmd,
+                                 expire_date,
+                                 messageDataType, packet["data"])
     return &message, nil
 }
