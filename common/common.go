@@ -71,6 +71,12 @@ func (m Message) Json() ([]byte, error) {
 	return json.Marshal(msg)
 }
 
+func (m Message) ParseJsonData() (map[string]interface{}, error) {
+	var jdata map[string]interface{}
+	err := json.Unmarshal([]byte(m.data.(string)), &jdata)
+	return jdata, err
+}
+
 func (m Message) From() string {
 	return m.from
 }
