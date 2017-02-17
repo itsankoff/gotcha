@@ -4,6 +4,7 @@ import (
     "log"
     "time"
     "strconv"
+    "fmt"
     "encoding/json"
     "net/http"
     "github.com/gorilla/websocket"
@@ -31,10 +32,11 @@ func NewWebSocket() WebSocketServer {
 }
 
 func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    log.Println("New http connection. Try to upgrade to WebSocket")
     conn, err := wss.upgrader.Upgrade(w, r, nil)
     if err != nil {
-        log.Println(err)
-        return
+        log.Println("Failed to upgrade to WebSocket", err)
+        fmt.Fprintf(w, "failed")
     }
 
     wss.addConnection(conn)
@@ -43,15 +45,13 @@ func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (wss *WebSocketServer) addConnection(conn *websocket.Conn) {
     now := time.Now().Unix()
     id := strconv.FormatInt(now, 10)
-    user := &common.User{
-        Id: id,
-        In: make(chan *common.Message),
-        Out: make(chan *common.Message),
-    }
+    user := common.NewUser(id)
 
     wss.connections[user] = conn
     go wss.inputHandler(user, conn)
     go wss.outputHandler(user, conn)
+    go wss.closeHandler(user, conn)
+
     wss.connected <- user
     log.Println("Add connections", user.Id)
 }
@@ -101,6 +101,11 @@ func (wss *WebSocketServer) outputHandler(user *common.User, conn *websocket.Con
     for {
         select {
         case msg := <-user.Out:
+            if msg == nil {
+                log.Printf("Nil message in output channel for %s. Stop output handler", user.Id)
+                return
+            }
+
             log.Println("Message in output channel for", user.Id)
             message, msgType := wss.encodeMessage(user, msg)
             if err := conn.WriteMessage(msgType, message); err != nil {
@@ -109,6 +114,15 @@ func (wss *WebSocketServer) outputHandler(user *common.User, conn *websocket.Con
                 return
             }
         }
+    }
+}
+
+func (wss *WebSocketServer) closeHandler(user *common.User, conn *websocket.Conn) {
+    log.Println("Start close handler for", user.Id)
+    select {
+    case <-user.Done:
+        log.Println("Done channel closed for user", user.Id)
+        wss.removeConnection(conn)
     }
 }
 
