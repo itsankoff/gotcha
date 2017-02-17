@@ -44,17 +44,23 @@ func (c Control) listen() {
                     case "create_group":
                         groupId := c.CreateGroup()
                         c.AddToGroup(groupId, msg.From())
+                        log.Println("Group created", groupId)
                     case "add_to_group":
-                        groupId := payload["group_id"]
-                        userId := payload["user_id"]
-                        c.AddToGroup(groupId.(string), userId.(string))
+                        groupId := payload["group_id"].(string)
+                        userId := payload["user_id"].(string)
+                        added := c.AddToGroup(groupId, userId)
+                        log.Printf("User %s added to group %s %t",
+                                   groupId, userId, added)
                     case "remove_from_group":
                         groupId := payload["group_id"].(string)
                         userId := payload["user_id"].(string)
-                        c.RemoveFromGroup(groupId, userId)
+                        removed := c.RemoveFromGroup(groupId, userId)
+                        log.Printf("User %s removed from group %s %t",
+                                   groupId, userId, removed)
                     case "delete_group":
                         groupId := payload["group_id"].(string)
-                        c.DeleteGroup(groupId)
+                        deleted := c.DeleteGroup(groupId)
+                        log.Printf("Group %s deleted %t", groupId, deleted)
                     case "list_groups":
                     case "join_group":
                     case "leave_group":
