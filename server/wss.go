@@ -151,10 +151,10 @@ func (wss WebSocketServer) decodeMessage(u *common.User,
         return nil, err
     }
 
-    expire_period, exists := packet["expire_period"].(int)
+    expire_period, exists := packet["expire_period"]
     var expire_date time.Time
     if exists {
-        expire_date = time.Now().Add(time.Duration(expire_period) * time.Second)
+        expire_date = time.Now().Add(time.Duration(expire_period.(float64)) * time.Second)
     }
 
     messageFrom := packet["from"].(string)
