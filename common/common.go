@@ -101,8 +101,8 @@ func (m Message) DataType() DataType {
 	return m.dataType
 }
 
-func NewResponse(msg *Message, response string) *Message {
-	responseMsg := NewMessage(msg.from, msg.to, msg.cmdType, msg.cmd,
+func NewResponse(msg *Message, response interface{}) *Message {
+	responseMsg := NewMessage("server", msg.from, msg.cmdType, msg.cmd,
 		time.Time{}, TEXT, response)
 	return &responseMsg
 }
