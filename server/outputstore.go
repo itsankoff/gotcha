@@ -41,6 +41,7 @@ func (store *OutputStore) RemoveOutput(id string) error {
 	_, ok := store.outputs[id]
 	if ok {
 		delete(store.outputs, id)
+		log.Println("Remove output from store", id)
 		return nil
 	}
 

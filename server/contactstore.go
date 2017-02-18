@@ -8,11 +8,11 @@ func NewContactStore() *ContactStore {
 }
 
 func (c *ContactStore) AddContact(userId string, contactId string) bool {
-	return false
+	return true
 }
 
 func (c *ContactStore) RemoveContact(userId string, contactId string) bool {
-	return false
+	return true
 }
 
 func (c *ContactStore) ListContacts(userId string) ([]string, bool) {
