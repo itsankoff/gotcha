@@ -8,9 +8,9 @@ import (
 
 func main() {
 	config := server.NewConfig()
-	config.ListenHost = *flag.String("host", ":9000", "host to listen")
-	config.FileServerHost = *flag.String("file_host", ":9000", "host to server files")
-	config.FileServerPath = *flag.String("file_path", "/files", "query file path to access files")
+	config.ListenHost = *flag.String("host", "0.0.0.0:9000", "host to listen")
+	config.FileServerHost = *flag.String("file_host", "http://0.0.0.0:9000", "host to server files")
+	config.FileServerPath = *flag.String("file_path", "/", "query path to access files")
 	config.FileServerFolder = *flag.String("file_folder", "./", "storage folder")
 	flag.Parse()
 
