@@ -80,7 +80,22 @@ func (m Message) Json() ([]byte, error) {
 }
 
 func (m Message) ParseJsonData() (map[string]interface{}, error) {
-	return m.data.(map[string]interface{}), nil
+	jdata, ok := m.data.(map[string]interface{})
+	if ok {
+		return jdata, nil
+	}
+
+	return make(map[string]interface{}), nil
+}
+
+func (m Message) GetJsonData(key string) interface{} {
+	jdata, err := m.ParseJsonData()
+	if err != nil {
+		return nil
+	}
+
+	val, _ := jdata[key]
+	return val
 }
 
 func (m Message) From() string {
@@ -103,6 +118,16 @@ func (m Message) Status() Status {
 	return m.status
 }
 
+func (m Message) Error() string {
+	jdata, err := m.ParseJsonData()
+	if err != nil {
+		return ""
+	}
+
+	errMsg, _ := jdata["error"].(string)
+	return errMsg
+}
+
 func (m Message) ExpireDate() time.Time {
 	return m.expireDate
 }
@@ -111,22 +136,34 @@ func (m Message) DataType() DataType {
 	return m.dataType
 }
 
-func NewResponse(msg *Message, response interface{}) *Message {
+func NewResponse(msg *Message, key string, response interface{}) *Message {
+	payload := make(map[string]interface{})
+	payload[key] = response
+	var status Status
+	if key == "error" {
+		status = STATUS_ERROR
+	} else {
+		status = STATUS_OK
+	}
+
 	responseMsg := NewMessage("server", msg.from, msg.cmdType, msg.cmd,
-		time.Time{}, TEXT, response)
+		time.Time{}, TEXT, payload)
+	responseMsg.status = status
+
 	return &responseMsg
 }
 
 type User struct {
-	Id   string
-	In   chan *Message
-	Out  chan *Message
-	Done chan interface{}
+	Id     string
+	UserId string
+	In     chan *Message
+	Out    chan *Message
+	Done   chan interface{}
 }
 
-func NewUser(userId string) *User {
+func NewUser(id string) *User {
 	return &User{
-		Id:   userId,
+		Id:   id,
 		In:   make(chan *Message),
 		Out:  make(chan *Message),
 		Done: make(chan interface{}),
