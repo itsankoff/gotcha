@@ -480,7 +480,7 @@ func (c *Client) SendFile(userId string, filePath string) (string, error) {
 
 	msg := common.NewMessage(c.userId, userId,
 		"file", "send_file", time.Time{},
-		common.BINARY, fileContent)
+		common.TEXT, fileContent)
 
 	data, err := msg.Json()
 	if err != nil {
