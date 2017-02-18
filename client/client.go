@@ -557,8 +557,9 @@ func (c *Client) SendTextFile(userId string, filePath string) (string, error) {
 
 // GetHistory retrieves the conversation history for a user
 // or a group
-func (c *Client) GetHistory(remote string, from time.Time, to time.Time) (History, error) {
-	return History{}, errors.New("Not Implemented")
+func (c *Client) GetHistory(remote string, from time.Time, to time.Time) (*[]common.Message, error) {
+	var messages *[]common.Message
+	return messages, errors.New("Not Implemented")
 }
 
 // StartInteractiveMode starts a commandline mode where you chat
