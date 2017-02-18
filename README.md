@@ -26,8 +26,8 @@ This repository provides both library which you can integrate in your project an
 
 **2. More sophisticated usage:**  
 
-    /path/to/your/workspace/bin/server --host=<ip|host> --port=<port> --key_path=<private key path> --cert_path=<cert path>
-    /path/to/your/workspace/bin/client --host=<ip|host> --port=<port>
+    /path/to/your/workspace/bin/server --host=<ip:port> --key_path=<private key path> --cert_path=<cert path>
+    /path/to/your/workspace/bin/client --host=<ip:port>
 
 **3. For full information about all possible options for both client and server run:**  
 
