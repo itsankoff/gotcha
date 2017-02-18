@@ -85,7 +85,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 		select {
 		case msg := <-user.In:
 			if msg == nil {
-				log.Println("Nil message in aggregate for id %s userId %s",
+				log.Printf("Nil message in aggregate for id %s userId %s",
 					user.Id, user.UserId)
 				s.outputStore.RemoveOutput(user.UserId)
 				return
@@ -110,7 +110,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 				pass := packet["password"].(string)
 				userId, registered := s.authRegistry.Register(username, pass)
 				if !registered {
-					log.Println("Registration for %s failed", username)
+					log.Printf("Registration for %s failed", username)
 					user.Disconnect()
 					return
 				}
@@ -136,7 +136,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 				pass := packet["password"].(string)
 				authenticated := s.authRegistry.Authenticate(userId, pass)
 				if !authenticated {
-					log.Println("Authentication for %s failed", userId)
+					log.Printf("Authentication for %s failed", userId)
 					user.Disconnect()
 					return
 				}
@@ -148,7 +148,6 @@ func (s *Server) aggregateMessages(user *common.User) {
 				response := common.NewResponse(msg, "authenticated", true)
 				user.Out <- response
 			case 2:
-				log.Println("Forward message to aggregate", msg.From())
 				s.aggregate <- msg
 			}
 		}
