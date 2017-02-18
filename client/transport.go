@@ -2,6 +2,7 @@ package client
 
 import "github.com/itsankoff/gotcha/common"
 
+// Defines the interface for transport implementations
 type Transport interface {
 	Connect(host string) error
 	ConnectAsync(host string) chan bool

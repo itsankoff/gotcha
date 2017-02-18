@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Transport implementation with a websocket
 type WebSocketClient struct {
 	In         chan *common.Message
 	serverHost string
