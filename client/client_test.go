@@ -251,4 +251,11 @@ func TestSendMessage(t *testing.T) {
 func TestSendFile(t *testing.T) {
 	client := getAuthClient()
 	defer client.Disconnect()
+
+	uri, err := client.SendFile(client.UserId(), "./client.go")
+	if err != nil {
+		t.Fatal("Failed to send file", err)
+	} else {
+		t.Log(uri)
+	}
 }
