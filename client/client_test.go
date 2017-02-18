@@ -259,3 +259,19 @@ func TestSendTextFile(t *testing.T) {
 		t.Log(uri)
 	}
 }
+
+func ExampleClient_StartInteractiveMode() {
+	ws := NewWebSocketClient()
+	c := New(ws)
+	err := c.Connect("ws://127.0.0.1:9000/websocket")
+	fmt.Println("connected", err)
+	userId, err := c.Register("pesho", "123")
+	fmt.Println("registered", err)
+
+	err = c.Authenticate(userId, "123")
+	fmt.Println("authenticated", err)
+
+	if err == nil {
+		c.StartInteractiveMode()
+	}
+}
