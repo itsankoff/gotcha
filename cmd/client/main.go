@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/itsankoff/gotcha/client"
 	"log"
-	"time"
 )
 
 func main() {
@@ -17,5 +16,7 @@ func main() {
 	err = c.Authenticate(userId, "123")
 	log.Println("authenticated", err)
 
-	time.Sleep(10 * time.Second)
+	if err == nil {
+		c.StartInteractiveMode()
+	}
 }
