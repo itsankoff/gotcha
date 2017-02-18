@@ -20,6 +20,7 @@ func (c *ContactStore) AddContact(userId string, contactId string) bool {
 	}
 
 	userContacts = append(userContacts, contactId)
+	c.contacts[userId] = userContacts
 	return true
 }
 
