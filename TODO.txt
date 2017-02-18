@@ -2,12 +2,13 @@
 (done) Create management protocol between client and server
 (done) Implement encode/decode messages in server
 (done) Implement control protocol in cmd client
-(inprogress) Implement control protocol for server
-(inprogress) Implement send message and send file for client
+(done) Implement control protocol for server
+(done) Implement send message and send file for client
+(done) Fix contact store (inmemory)
+(done) Fix authregistry (inmemory)
+(done) Improve server logging
+(done) Use flag lib to parse command line for both server and cmd client
 * Implement client interactive mode
 * Implement secure channels
 * Documentation
-* Improve server logging
 * Add tests for wss.go
-* Use flag lib to parse command line for both server and cmd client
-* Fix contact store
