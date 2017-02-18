@@ -208,7 +208,7 @@ func TestAddContact(t *testing.T) {
 	// added
 }
 
-func TestListContactOneContact(t *testing.T) {
+func TestListContactsOneContact(t *testing.T) {
 	client := getAuthClient()
 	defer client.Disconnect()
 
