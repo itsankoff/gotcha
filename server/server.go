@@ -18,12 +18,13 @@ type Server struct {
 	history      *History
 	contactStore *ContactStore
 	authRegistry *AuthRegistry
+	fileStore    *FileStore
 
 	control   *Control
 	messanger *Messanger
 }
 
-func New() *Server {
+func New(config *Config) *Server {
 	s := &Server{
 		transports:      make(map[string]Transport),
 		users:           make([]*common.User, 10),
@@ -35,6 +36,8 @@ func New() *Server {
 
 	s.outputStore = NewOutputStore()
 	s.contactStore = NewContactStore()
+	s.fileStore = NewFileStore(config.FileServerFolder,
+		config.FileServerHost)
 
 	historyInput := make(chan *common.Message)
 	s.history = NewHistory(historyInput, s.outputStore)
@@ -47,7 +50,8 @@ func New() *Server {
 	// register message handler
 	messangerInput := make(chan *common.Message)
 
-	s.messanger = NewMessanger(messangerInput, s.history, s.outputStore)
+	s.messanger = NewMessanger(messangerInput, s.history,
+		s.outputStore, s.fileStore)
 	s.messageHandlers["message"] = messangerInput
 	s.messageHandlers["file"] = messangerInput
 	s.messageHandlers["history"] = historyInput
