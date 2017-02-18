@@ -10,14 +10,17 @@ type Control struct {
 	groups       []*Group
 	outputStore  *OutputStore
 	contactStore *ContactStore
+	authRegistry *AuthRegistry
 }
 
 func NewControl(input chan *common.Message,
-	outputStore *OutputStore, contactStore *ContactStore) *Control {
+	outputStore *OutputStore, contactStore *ContactStore,
+	authRegistry *AuthRegistry) *Control {
 	c := &Control{
 		input:        input,
 		outputStore:  outputStore,
 		contactStore: contactStore,
+		authRegistry: authRegistry,
 	}
 
 	go c.listen()
@@ -126,7 +129,7 @@ func (c Control) RemoveContact(user string, contactId string) bool {
 }
 
 func (c Control) SearchContact(user string, contactName string) string {
-	contactId := c.contactStore.SearchContact(user, contactName)
+	contactId := c.authRegistry.SearchContact(contactName)
 	log.Printf("Seach contact %s for user %s contactId: %s",
 		contactName, user, contactId)
 	return contactId
