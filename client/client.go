@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/itsankoff/gotcha/common"
 	"log"
@@ -74,12 +73,12 @@ func (c *Client) Register(username, password string) (string, error) {
 	select {
 	case resp := <-c.Out:
 		if resp.Status() == common.STATUS_ERROR {
-			errorMessage := resp.String()
+			errorMessage := resp.Error()
 			log.Println("Failed to register", errorMessage)
 			return "", errors.New(errorMessage)
 		}
 
-		userId := resp.String()
+		userId := resp.GetJsonData("user_id").(string)
 		log.Println("User registered", userId)
 		return userId, nil
 	case <-time.After(time.Second * 10):
@@ -111,15 +110,15 @@ func (c *Client) Authenticate(userId, password string) error {
 	select {
 	case resp := <-c.Out:
 		if resp.Status() == common.STATUS_ERROR {
-			errorMessage := resp.String()
+			errorMessage := resp.Error()
 			log.Println("Failed to authenticate user", errorMessage)
 			return errors.New(errorMessage)
 		}
 
-		respMessage := resp.String()
 		c.userId = userId
 		c.authenticated = true
-		log.Println("User authenticated", respMessage)
+		authenticated := resp.GetJsonData("authenticated").(bool)
+		log.Println("User authenticated", authenticated)
 		return nil
 	case <-time.After(10 * time.Second):
 		log.Println("Authentication response timeout")
@@ -127,36 +126,41 @@ func (c *Client) Authenticate(userId, password string) error {
 	}
 }
 
+func (c Client) UserId() string {
+	return c.userId
+}
+
 func (c *Client) ListContacts() ([]string, error) {
+	var contacts []string
 	if !c.authenticated {
-		return []string{}, errors.New("Not authenticated. Call Authenticate first")
+		return contacts, errors.New("Not authenticated. Call Authenticate first")
 	}
 
+	var payload map[string]interface{}
 	msg := common.NewMessage(c.userId, "server",
 		"control", "list_contacts", time.Time{},
-		common.TEXT, "")
+		common.TEXT, payload)
 
 	encoded, err := msg.Json()
 	if err != nil {
 		log.Println("Failed to encode auth message", err)
-		return []string{}, err
+		return contacts, err
 	}
 
 	err = c.transport.SendText(string(encoded))
 	if err != nil {
 		log.Println("Failed to send auth message", err)
-		return []string{}, err
+		return contacts, err
 	}
 
 	resp := <-c.Out
-	data := resp.String()
-	var contacts []string
-	err = json.Unmarshal([]byte(data), &contacts)
-	if err != nil {
-		log.Println("Failed to parse contact response", err)
-		return []string{}, err
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("List contacts response error", errMsg)
+		return []string{}, errors.New(errMsg)
 	}
 
+	contacts, _ = resp.GetJsonData("contacts").([]string)
 	return contacts, nil
 }
 
@@ -184,7 +188,13 @@ func (c *Client) SearchContact(contactName string) (string, error) {
 	}
 
 	resp := <-c.Out
-	contactId := resp.String()
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Search contact response error", errMsg)
+		return "", errors.New(errMsg)
+	}
+
+	contactId := resp.GetJsonData("contact_id").(string)
 	return contactId, nil
 }
 
@@ -212,11 +222,13 @@ func (c *Client) AddContact(contactId string) error {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Add contact response error", errMsg)
+		return errors.New(errMsg)
 	}
 
-	return errors.New(resp.String())
+	return nil
 }
 
 func (c *Client) RemoveContact(contactId string) error {
@@ -243,16 +255,19 @@ func (c *Client) RemoveContact(contactId string) error {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Remove contact response error", errMsg)
+		return errors.New(errMsg)
 	}
 
-	return errors.New(resp.String())
+	return nil
 }
 
 func (c *Client) CreateGroup() (string, error) {
+	var groupId string
 	if !c.authenticated {
-		return "", errors.New("Not authenticated. Call Authenticate first")
+		return groupId, errors.New("Not authenticated. Call Authenticate first")
 	}
 
 	msg := common.NewMessage(c.userId, "server",
@@ -262,21 +277,24 @@ func (c *Client) CreateGroup() (string, error) {
 	encoded, err := msg.Json()
 	if err != nil {
 		log.Println("Failed to encode create group message", err)
-		return "", err
+		return groupId, err
 	}
 
 	err = c.transport.SendText(string(encoded))
 	if err != nil {
 		log.Println("Failed to send create group message", err)
-		return "", err
+		return groupId, err
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return resp.String(), nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Create group response error", errMsg)
+		return groupId, errors.New(errMsg)
 	}
 
-	return "", errors.New(resp.String())
+	groupId = resp.GetJsonData("group_id").(string)
+	return groupId, nil
 }
 
 func (c *Client) AddToGroup(userId, groupId string) error {
@@ -304,11 +322,13 @@ func (c *Client) AddToGroup(userId, groupId string) error {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Add to group response error", errMsg)
+		return errors.New(errMsg)
 	}
 
-	return errors.New(resp.String())
+	return nil
 }
 
 func (c *Client) RemoveFromGroup(userId, groupId string) error {
@@ -336,11 +356,13 @@ func (c *Client) RemoveFromGroup(userId, groupId string) error {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Remove from group response error", errMsg)
+		return errors.New(errMsg)
 	}
 
-	return errors.New(resp.String())
+	return nil
 }
 
 func (c *Client) DeleteGroup(groupId string) error {
@@ -367,11 +389,13 @@ func (c *Client) DeleteGroup(groupId string) error {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		return nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Delete group response error", errMsg)
+		return errors.New(errMsg)
 	}
 
-	return errors.New(resp.String())
+	return nil
 }
 
 func (c *Client) ListGroups() ([]string, error) {
@@ -397,18 +421,14 @@ func (c *Client) ListGroups() ([]string, error) {
 	}
 
 	resp := <-c.Out
-	if resp.Status() == common.STATUS_OK {
-		data := resp.String()
-		err := json.Unmarshal([]byte(data), &groups)
-		if err != nil {
-			log.Println("Failed to parse list groups response", err)
-			return []string{}, err
-		}
-
-		return groups, nil
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Delete group response error", errMsg)
+		return groups, errors.New(errMsg)
 	}
 
-	return groups, errors.New(resp.String())
+	groups, _ = resp.GetJsonData("groups").([]string)
+	return groups, nil
 }
 
 func (c *Client) JoinGroup(groupId string) error {
@@ -419,16 +439,38 @@ func (c *Client) LeaveGroup(groupId string) error {
 	return c.RemoveFromGroup(c.userId, groupId)
 }
 
-func (c *Client) SendMessage(userId int64, message string) (bool, error) {
-	return false, errors.New("Not Implemented")
+func (c *Client) SendMessage(userId string, message string) error {
+	return c.SendTempMessage(userId, message, time.Time{})
 }
 
-func (c *Client) SendTempMessage(userId int64, message string, expire time.Duration) (bool, error) {
-	return false, errors.New("Not Implemented")
+func (c *Client) SendTempMessage(userId string, message string,
+	expire time.Time) error {
+	if !c.authenticated {
+		return errors.New("Not authenticated. Call Authenticate first")
+	}
+
+	msg := common.NewMessage(c.userId, userId,
+		"message", "send_message",
+		expire, common.TEXT, message)
+
+	encoded, err := msg.Json()
+	if err != nil {
+		log.Println("Failed to encode instant message", err)
+		return err
+	}
+
+	err = c.transport.SendText(string(encoded))
+	if err != nil {
+		log.Println("Failed to send instant message", err)
+		return err
+	}
+
+	log.Println("Instant message sent")
+	return nil
 }
 
-func (c *Client) SendFile(userId int64, filePath string) (bool, error) {
-	return false, errors.New("Not Implemented")
+func (c *Client) SendFile(userId string, filePath string) error {
+	return errors.New("Not Implemented")
 }
 
 func (c *Client) GetHistory(from time.Time, to time.Time) (History, error) {
