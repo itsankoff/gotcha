@@ -8,7 +8,7 @@
 (done) Fix authregistry (inmemory)
 (done) Improve server logging
 (done) Use flag lib to parse command line for both server and cmd client
-* Implement client interactive mode
-* Implement secure channels
-* Documentation
-* Add tests for wss.go
+(done) Fix File file sending
+(done) Server SSL
+(done) Iteractive mode
+(done) Documentation
