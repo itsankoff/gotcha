@@ -1,10 +1,13 @@
 package client
 
 import (
+	"bufio"
 	"errors"
+	"fmt"
 	"github.com/itsankoff/gotcha/common"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 )
 
@@ -530,5 +533,13 @@ func (c *Client) PrintHelp() {
 }
 
 func (c *Client) StartInteractiveMode() {
-
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter text: ")
+		text, _ := reader.ReadString('\n')
+		c.SendMessage(c.userId, text)
+		resp := <-c.Out
+		data := resp.String()
+		fmt.Println("Response: ", data)
+	}
 }
