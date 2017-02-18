@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"github.com/itsankoff/gotcha/common"
+	"io/ioutil"
 	"log"
 	"time"
 )
@@ -469,8 +470,40 @@ func (c *Client) SendTempMessage(userId string, message string,
 	return nil
 }
 
-func (c *Client) SendFile(userId string, filePath string) error {
-	return errors.New("Not Implemented")
+func (c *Client) SendFile(userId string, filePath string) (string, error) {
+	var link string
+	fileContent, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Println("Failed to read file", err)
+		return link, err
+	}
+
+	msg := common.NewMessage(c.userId, userId,
+		"file", "send_file", time.Time{},
+		common.BINARY, fileContent)
+
+	data, err := msg.Json()
+	if err != nil {
+		log.Println("Failed to encode file", err)
+		return link, err
+	}
+
+	err = c.transport.SendBinary(data)
+	if err != nil {
+		log.Println("Failed to send file content", err)
+		return link, err
+	}
+
+	resp := <-c.Out
+	if resp.Status() == common.STATUS_ERROR {
+		errMsg := resp.Error()
+		log.Println("Send file response error", errMsg)
+		return link, errors.New(errMsg)
+	}
+
+	link = resp.GetJsonData("file_link").(string)
+	log.Println("File sent", link)
+	return link, nil
 }
 
 func (c *Client) GetHistory(from time.Time, to time.Time) (History, error) {
