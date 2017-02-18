@@ -28,7 +28,7 @@ func (h History) listen() {
 			valid := h.validate(msg)
 			if !valid {
 				log.Println("Failed to validate history message")
-				response := common.NewResponse(msg, "invalid message")
+				response := common.NewResponse(msg, "error", "invalid message")
 				h.outputStore.Send(response)
 				return
 			}
@@ -36,7 +36,7 @@ func (h History) listen() {
 			payload, err := msg.ParseJsonData()
 			if err != nil {
 				log.Printf("Failed to parse history message from %s", msg.From())
-				response := common.NewResponse(msg, "bad message")
+				response := common.NewResponse(msg, "error", "bad message")
 				h.outputStore.Send(response)
 				return
 			}
@@ -50,7 +50,7 @@ func (h History) listen() {
 				toDate := time.Unix(int64(payload["to_date"].(float64)), 0)
 				messages := h.GetHistory(userId, forUserId, fromDate, toDate)
 				accumulated := h.accumulate(messages)
-				response := common.NewResponse(msg, accumulated)
+				response := common.NewResponse(msg, "history", accumulated)
 				h.outputStore.Send(response)
 			}
 		}
