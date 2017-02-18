@@ -2,16 +2,12 @@ package main
 
 import (
 	"github.com/itsankoff/gotcha/client"
-	"github.com/itsankoff/gotcha/common"
 	"log"
 	"time"
 )
 
 func main() {
-	input := make(chan *common.Message)
 	ws := client.NewWebSocketClient()
-	ws.SetReceiver(input)
-
 	c := client.New(ws)
 	err := c.Connect("ws://127.0.0.1:9000/websocket")
 	log.Println("connected", err)
