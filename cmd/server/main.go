@@ -27,11 +27,6 @@ func main() {
 		"", "path to ssl cert")
 
 	flag.Parse()
-	args := flag.Args()
-	if len(args) > 0 && args[0] == "--help" {
-		flag.PrintDefaults()
-		return
-	}
 
 	srv := server.New(config)
 	wss := server.NewWebSocket(config)
