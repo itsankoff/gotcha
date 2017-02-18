@@ -61,7 +61,6 @@ func (s *Server) startRouter() {
 	for {
 		select {
 		case msg := <-s.aggregate:
-			log.Println("Message in aggregate", msg.From())
 			cmdType := msg.CmdType()
 			handler, ok := s.messageHandlers[cmdType]
 			if ok {
@@ -82,7 +81,9 @@ func (s *Server) aggregateMessages(user *common.User) {
 		select {
 		case msg := <-user.In:
 			if msg == nil {
-				log.Println("Nil message in aggregate")
+				log.Println("Nil message in aggregate for id %s userId %s",
+					user.Id, user.UserId)
+				s.outputStore.RemoveOutput(user.UserId)
 				return
 			}
 
@@ -110,7 +111,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 					return
 				}
 
-				response := common.NewResponse(msg, userId)
+				response := common.NewResponse(msg, "user_id", userId)
 				user.Out <- response
 				state = 1
 			case 1:
@@ -136,10 +137,11 @@ func (s *Server) aggregateMessages(user *common.User) {
 					return
 				}
 
-				s.outputStore.AddOutput(userId, user.Out)
+				user.UserId = userId
+				s.outputStore.AddOutput(user.UserId, user.Out)
 				state = 2
 
-				response := common.NewResponse(msg, "authenticated")
+				response := common.NewResponse(msg, "authenticated", true)
 				user.Out <- response
 			case 2:
 				log.Println("Forward message to aggregate", msg.From())
@@ -186,7 +188,6 @@ func (s *Server) userConnected() {
 		select {
 		case user := <-s.connected:
 			s.users = append(s.users, user)
-			s.outputStore.AddOutput(user.Id, user.Out)
 			log.Println("Add user to server")
 			go s.aggregateMessages(user)
 		}
@@ -201,8 +202,7 @@ func (s *Server) userDisconnected() {
 			for i, u := range s.users {
 				if u == user {
 					s.users = append(s.users[:i], s.users[i+1:]...)
-					s.outputStore.RemoveOutput(user.Id)
-					log.Println("Remove user", user.Id)
+					log.Println("Remove user from server", user.Id)
 					break
 				}
 			}
