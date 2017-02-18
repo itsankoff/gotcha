@@ -78,10 +78,16 @@ func (ws *WebSocketClient) ConnectAsync(host string) chan bool {
 }
 
 func (ws *WebSocketClient) Disconnect() {
-	ws.conn.Close()
+	if ws.conn != nil {
+		ws.conn.Close()
+	}
 }
 
 func (ws *WebSocketClient) Reconnect() error {
+	if ws.serverHost == "" {
+		return errors.New("No server host provided")
+	}
+
 	ws.Disconnect()
 	return ws.Connect(ws.serverHost)
 }
