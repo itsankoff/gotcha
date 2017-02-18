@@ -20,6 +20,12 @@ func main() {
 	flag.StringVar(&config.FileServerFolder, "file_folder",
 		"./", "storage folder")
 
+	flag.StringVar(&config.SSLKeyPath, "key_path",
+		"", "path to ssl key")
+
+	flag.StringVar(&config.SSLCertPath, "cert_path",
+		"", "path to ssl cert")
+
 	flag.Parse()
 	args := flag.Args()
 	if len(args) > 0 && args[0] == "--help" {
@@ -28,7 +34,7 @@ func main() {
 	}
 
 	srv := server.New(config)
-	wss := server.NewWebSocket()
+	wss := server.NewWebSocket(config)
 	srv.AddTransport("127.0.0.1:9000", &wss)
 	done := make(chan interface{})
 

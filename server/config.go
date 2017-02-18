@@ -5,6 +5,8 @@ type Config struct {
 	FileServerHost   string
 	FileServerPath   string
 	FileServerFolder string
+	SSLKeyPath       string
+	SSLCertPath      string
 }
 
 func NewConfig() *Config {

@@ -16,19 +16,30 @@ type WebSocketServer struct {
 	connections  map[*common.User]*websocket.Conn
 	connected    chan<- *common.User
 	disconnected chan<- *common.User
+	useSSL       bool
+	sslKeyPath   string
+	sslCertPath  string
 }
 
-func NewWebSocket() WebSocketServer {
+func NewWebSocket(config *Config) WebSocketServer {
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
-	return WebSocketServer{
+	wss := WebSocketServer{
 		upgrader:    upgrader,
 		connections: make(map[*common.User]*websocket.Conn),
 	}
+
+	if config.SSLKeyPath != "" {
+		wss.useSSL = true
+		wss.sslKeyPath = config.SSLKeyPath
+		wss.sslCertPath = config.SSLCertPath
+	}
+
+	return wss
 }
 
 func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -133,8 +144,13 @@ func (wss *WebSocketServer) Start(host string, done <-chan interface{}) {
 		http.Handle(subPath, nil)
 	}()
 
-	log.Println("WebSocket Server Listens on:", host+subPath)
-	log.Fatal(http.ListenAndServe(host, nil))
+	if wss.useSSL {
+		log.Println("WebSocket Server Listens on wss://" + host + subPath)
+		log.Fatal(http.ListenAndServeTLS(host, wss.sslCertPath, wss.sslKeyPath, nil))
+	} else {
+		log.Println("WebSocket Server Listens on ws://" + host + subPath)
+		log.Fatal(http.ListenAndServe(host, nil))
+	}
 }
 
 func (wss *WebSocketServer) OnUserConnected(handler chan<- *common.User) {
