@@ -470,7 +470,7 @@ func (c *Client) SendTempMessage(userId string, message string,
 	return nil
 }
 
-func (c *Client) SendFile(userId string, filePath string) (string, error) {
+func (c *Client) SendTextFile(userId string, filePath string) (string, error) {
 	var link string
 	fileContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -480,7 +480,7 @@ func (c *Client) SendFile(userId string, filePath string) (string, error) {
 
 	msg := common.NewMessage(c.userId, userId,
 		"file", "send_file", time.Time{},
-		common.TEXT, fileContent)
+		common.TEXT, string(fileContent))
 
 	data, err := msg.Json()
 	if err != nil {
@@ -488,7 +488,7 @@ func (c *Client) SendFile(userId string, filePath string) (string, error) {
 		return link, err
 	}
 
-	err = c.transport.SendBinary(data)
+	err = c.transport.SendText(string(data))
 	if err != nil {
 		log.Println("Failed to send file content", err)
 		return link, err
@@ -501,7 +501,7 @@ func (c *Client) SendFile(userId string, filePath string) (string, error) {
 		return link, errors.New(errMsg)
 	}
 
-	link = resp.GetJsonData("file_link").(string)
+	link = resp.String()
 	log.Println("File sent", link)
 	return link, nil
 }
