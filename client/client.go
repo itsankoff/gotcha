@@ -158,10 +158,25 @@ func (c *Client) ListContacts() ([]string, error) {
 	if resp.Status() == common.STATUS_ERROR {
 		errMsg := resp.Error()
 		log.Println("List contacts response error", errMsg)
-		return []string{}, errors.New(errMsg)
+		return contacts, errors.New(errMsg)
 	}
 
-	contacts, _ = resp.GetJsonData("contacts").([]string)
+	contactsData := resp.GetJsonData("contacts")
+	rawContacts, ok := contactsData.([]interface{})
+	if !ok {
+		return contacts, errors.New("Failed to parse contacts response")
+	}
+
+	for _, rawContact := range rawContacts {
+		contact, ok := rawContact.(string)
+		if !ok {
+			log.Println("Failed to parse contact", rawContact)
+			continue
+		}
+
+		contacts = append(contacts, contact)
+	}
+
 	return contacts, nil
 }
 
