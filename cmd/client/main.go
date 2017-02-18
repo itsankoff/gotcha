@@ -1,14 +1,21 @@
 package main
 
 import (
+	"flag"
 	"github.com/itsankoff/gotcha/client"
 	"log"
 )
 
 func main() {
+	var host string
+	flag.StringVar(&host, "host",
+		"ws://0.0.0.0:9000/websocket", "remote server host")
+
+	flag.Parse()
+
 	ws := client.NewWebSocketClient()
 	c := client.New(ws)
-	err := c.Connect("ws://127.0.0.1:9000/websocket")
+	err := c.Connect(host)
 	log.Println("connected", err)
 	userId, err := c.Register("pesho", "123")
 	log.Println("registered", err)
