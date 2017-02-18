@@ -1,3 +1,7 @@
+// Package server delivers all the functionallity to create
+// a chat server.
+// It supports extensions for multiple transports.
+// See transport.go for more information
 package server
 
 import (
@@ -6,6 +10,7 @@ import (
 	"log"
 )
 
+// Main server type
 type Server struct {
 	transports      map[string]Transport
 	users           []*common.User
@@ -24,6 +29,7 @@ type Server struct {
 	messanger *Messanger
 }
 
+// New creates new server instance
 func New(config *Config) *Server {
 	s := &Server{
 		transports:      make(map[string]Transport),
@@ -154,6 +160,7 @@ func (s *Server) aggregateMessages(user *common.User) {
 	}
 }
 
+// AddTransport adds transport which later will listen on host
 func (s *Server) AddTransport(host string, t Transport) error {
 	if host == "" {
 		return errors.New("Can't add transport for an empty host")
@@ -174,6 +181,7 @@ func (s *Server) AddTransport(host string, t Transport) error {
 	return nil
 }
 
+// RemoveTransport removes the transport for the host
 func (s *Server) RemoveTransport(host string) error {
 	_, ok := s.transports[host]
 	if ok {
@@ -220,6 +228,8 @@ func (s Server) echoHandler(user *common.User) {
 	}
 }
 
+// Start starts each transport in own gorouting. Blocks
+// until done channel is not closed
 func (s *Server) Start(done <-chan interface{}) error {
 	if len(s.transports) == 0 {
 		return errors.New("Need to add transport before calling Start")
@@ -242,6 +252,7 @@ func (s *Server) Start(done <-chan interface{}) error {
 	return nil
 }
 
+// StartAsync is same as Start by runs in async mode
 func (s *Server) StartAsync() (chan interface{}, error) {
 	if len(s.transports) == 0 {
 		return nil, errors.New("Need to add transport before calling Start")

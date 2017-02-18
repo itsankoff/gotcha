@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// Stores the files locally and expose http
+// interfaces from where you can download the files by file token
 type FileStore struct {
 	rootFolder  string
 	host        string
@@ -31,6 +33,8 @@ func (store FileStore) buildUri(token string) string {
 	return store.host + store.networkPath + token
 }
 
+// AddTextFile stores the stores the file in root folder
+// and generates access uri
 func (store FileStore) AddTextFile(fileContent string) string {
 	now := time.Now().UnixNano()
 	token := "tmp" + strconv.FormatInt(now, 10)
@@ -53,6 +57,7 @@ func (store FileStore) AddTextFile(fileContent string) string {
 	return uri
 }
 
+// RemoveFile removes the file for this uri
 func (store FileStore) RemoveFile(uri string) bool {
 	split := strings.Split(uri, "/")
 	token := split[len(split)-1]

@@ -2,6 +2,7 @@ package server
 
 import "log"
 
+// Stores contact lists for users
 type ContactStore struct {
 	contacts map[string][]string
 }
@@ -12,6 +13,7 @@ func NewContactStore() *ContactStore {
 	}
 }
 
+// AddContact adds contact in user's contact list
 func (c *ContactStore) AddContact(userId string, contactId string) bool {
 	userContacts, ok := c.contacts[userId]
 	if !ok {
@@ -24,6 +26,7 @@ func (c *ContactStore) AddContact(userId string, contactId string) bool {
 	return true
 }
 
+// RemoveContact removes contact from user's contact list
 func (c *ContactStore) RemoveContact(userId string, contactId string) bool {
 	userContacts, ok := c.contacts[userId]
 	if !ok {
@@ -41,6 +44,7 @@ func (c *ContactStore) RemoveContact(userId string, contactId string) bool {
 	return false
 }
 
+// ListContacts returns user's contact list for userId
 func (c *ContactStore) ListContacts(userId string) ([]string, bool) {
 	userContacts, ok := c.contacts[userId]
 	if !ok {

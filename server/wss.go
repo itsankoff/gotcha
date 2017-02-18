@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Transport implementation with websocket protocol
 type WebSocketServer struct {
 	upgrader     websocket.Upgrader
 	connections  map[*common.User]*websocket.Conn

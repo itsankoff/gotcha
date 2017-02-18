@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+// Main facility which handles all the control
+// protocol messages
 type Control struct {
 	input        chan *common.Message
 	groups       []*Group
@@ -110,24 +112,30 @@ func (c Control) findGroup(groupId string) *Group {
 	return nil
 }
 
+// ListContacts handles protocol "list_contacts"
+// Returns array with contact ids
 func (c Control) ListContacts(user string) ([]string, bool) {
 	contacts, listed := c.contactStore.ListContacts(user)
 	log.Printf("List contacts for user %s %t", user, listed)
 	return contacts, listed
 }
 
+// AddContact handles protocol "add_contact"
 func (c Control) AddContact(user string, contactId string) bool {
 	added := c.contactStore.AddContact(user, contactId)
 	log.Printf("Add contact %s for user %s %t", contactId, user, added)
 	return added
 }
 
+// RemoveContact handles protocol "remove_contact"
 func (c Control) RemoveContact(user string, contactId string) bool {
 	removed := c.contactStore.RemoveContact(user, contactId)
 	log.Printf("Remove contact %s for user %s %t", contactId, user, removed)
 	return removed
 }
 
+// SearchContact handles protocol "search_contact"
+// Used for finding a user by username
 func (c Control) SearchContact(user string, contactName string) string {
 	contactId := c.authRegistry.SearchContact(contactName)
 	log.Printf("Seach contact %s for user %s contactId: %s",
@@ -135,6 +143,7 @@ func (c Control) SearchContact(user string, contactName string) string {
 	return contactId
 }
 
+// CreateGroup handles protocol "create_group"
 func (c *Control) CreateGroup() string {
 	group := NewGroup()
 	c.groups = append(c.groups, group)
@@ -142,6 +151,7 @@ func (c *Control) CreateGroup() string {
 	return group.Id
 }
 
+// AddToGroup handles protocol "add_to_group"
 func (c Control) AddToGroup(groupId string, userId string) bool {
 	group := c.findGroup(groupId)
 	if group == nil {
@@ -161,6 +171,7 @@ func (c Control) AddToGroup(groupId string, userId string) bool {
 	return added
 }
 
+// RemoveToGroup handles protocol "remove_from_group"
 func (c Control) RemoveFromGroup(groupId string, userId string) bool {
 	group := c.findGroup(groupId)
 	if group == nil {
@@ -174,6 +185,7 @@ func (c Control) RemoveFromGroup(groupId string, userId string) bool {
 	return removed
 }
 
+// DeleteGroup handles protocol "delete_group"
 func (c *Control) DeleteGroup(groupId string) bool {
 	var deleted bool
 	for i, group := range c.groups {
@@ -190,6 +202,7 @@ func (c *Control) DeleteGroup(groupId string) bool {
 	return deleted
 }
 
+// ListGroups handles protocol "list_groups"
 func (c Control) ListGroups(userId string) *[]string {
 	groupIds := []string{}
 	for _, g := range c.groups {

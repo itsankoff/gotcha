@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+// Handler for all messages/files communication
+// between the clients.
 type Messanger struct {
 	input       chan *common.Message
 	history     *History
@@ -12,6 +14,8 @@ type Messanger struct {
 	outputStore *OutputStore
 }
 
+// NewMessenger creates a new messagener object
+// which handlers messages through input channel.
 func NewMessanger(input chan *common.Message,
 	history *History, outputStore *OutputStore, fileStore *FileStore) *Messanger {
 	m := &Messanger{

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Stores message history
 type History struct {
 	input       chan *common.Message
 	outputStore *OutputStore
@@ -65,11 +66,14 @@ func (h History) accumulate(messages []*common.Message) string {
 	return ""
 }
 
+// AddMessage adds in the history
 func (h History) AddMessage(msg *common.Message) bool {
 	log.Println("Add message in history", msg)
 	return false
 }
 
+// GetHistory returns a history for user conversation
+// for a time period
 func (h History) GetHistory(userId string, forUserId string,
 	from time.Time, to time.Time) []*common.Message {
 	return []*common.Message{}

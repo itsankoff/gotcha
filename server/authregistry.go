@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Stores authenticated users in memory
 type AuthRegistry struct {
 	users map[string][]string
 }
@@ -16,6 +17,8 @@ func NewAuthRegistry() *AuthRegistry {
 	}
 }
 
+// Register generates server domain user id which
+// for now is current ts in nanoseconds
 func (a *AuthRegistry) Register(username string, pass string) (string, bool) {
 	now := time.Now().UnixNano()
 	userId := strconv.FormatInt(now, 10)
@@ -24,6 +27,7 @@ func (a *AuthRegistry) Register(username string, pass string) (string, bool) {
 	return userId, true
 }
 
+// Authenticates authenticates the user id with it's password
 func (a *AuthRegistry) Authenticate(userId string, pass string) bool {
 	credentials, exists := a.users[userId]
 	if !exists {
@@ -40,6 +44,7 @@ func (a *AuthRegistry) Authenticate(userId string, pass string) bool {
 	return true
 }
 
+// SearchContact searches globally for contact with param username
 func (a *AuthRegistry) SearchContact(username string) string {
 	for uId, c := range a.users {
 		if c[0] == username {

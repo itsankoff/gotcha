@@ -6,25 +6,21 @@ import (
 	"log"
 )
 
-type command struct {
-	cmd      string
-	outputId string
-}
-
+// Store for all authenticated outputs
+// Main facility to send a message to the remote user
 type OutputStore struct {
-	manager chan *command
 	outputs map[string]chan<- *common.Message
 }
 
 func NewOutputStore() *OutputStore {
 	out := &OutputStore{
-		manager: make(chan *command),
 		outputs: make(map[string]chan<- *common.Message),
 	}
 
 	return out
 }
 
+// AddOutput adds user output in the store by id
 func (store *OutputStore) AddOutput(id string,
 	output chan<- *common.Message) error {
 	_, ok := store.outputs[id]
@@ -37,6 +33,7 @@ func (store *OutputStore) AddOutput(id string,
 	return nil
 }
 
+// RemoveOutput removes user output from the store by id
 func (store *OutputStore) RemoveOutput(id string) error {
 	_, ok := store.outputs[id]
 	if ok {
@@ -48,6 +45,7 @@ func (store *OutputStore) RemoveOutput(id string) error {
 	return errors.New("Failed to remove output from store " + id)
 }
 
+// GetOutput returns a user output from the store by id
 func (store OutputStore) GetOutput(id string) chan<- *common.Message {
 	output, ok := store.outputs[id]
 	if ok {
@@ -58,6 +56,7 @@ func (store OutputStore) GetOutput(id string) chan<- *common.Message {
 	return nil
 }
 
+// Send sends a message to user's output
 func (store OutputStore) Send(msg *common.Message) {
 	output := store.GetOutput(msg.To())
 	if output != nil {

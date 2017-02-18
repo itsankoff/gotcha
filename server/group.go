@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// Aggregate output. When a message is received in the Out
+// channel it will send it to all outputs in the group.
+// Like a multicast channel
 type Group struct {
 	Id      string
 	Out     chan *common.Message
@@ -34,11 +37,13 @@ func (g *Group) listen() {
 	}
 }
 
+// AddOutput adds output in the aggregate
 func (g *Group) AddOutput(id string, output chan<- *common.Message) bool {
 	g.outputs[id] = output
 	return true
 }
 
+// RemoveOutput removes output from the aggregate
 func (g *Group) RemoveOutput(id string) bool {
 	_, ok := g.outputs[id]
 	if ok {
