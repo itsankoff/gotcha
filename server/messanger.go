@@ -33,12 +33,12 @@ func (m *Messanger) listen() {
 			valid := m.validate(msg)
 			if valid {
 				if msg.CmdType() == "file" {
-					var fileContent string
+					var uri string
 					if msg.DataType() == common.TEXT {
-						fileContent = msg.String()
+						fileContent := msg.String()
+						uri = m.fileStore.AddTextFile(fileContent)
 					}
 
-					uri := m.fileStore.AddFile(fileContent)
 					newMsg := common.NewMessage(msg.From(), msg.To(),
 						msg.CmdType(), msg.Cmd(),
 						msg.ExpireDate(), common.TEXT, uri)

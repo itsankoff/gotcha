@@ -15,11 +15,11 @@ type FileStore struct {
 	networkPath string
 }
 
-func NewFileStore(folder string, host string) *FileStore {
+func NewFileStore(folder, host, networkPath string) *FileStore {
 	fileStore := &FileStore{
 		rootFolder:  folder,
 		host:        host,
-		networkPath: "/",
+		networkPath: networkPath,
 	}
 
 	fs := http.FileServer(http.Dir(folder))
@@ -31,7 +31,7 @@ func (store FileStore) buildUri(token string) string {
 	return store.host + store.networkPath + token
 }
 
-func (store FileStore) AddFile(fileContent string) string {
+func (store FileStore) AddTextFile(fileContent string) string {
 	now := time.Now().UnixNano()
 	token := "tmp" + strconv.FormatInt(now, 10)
 	filePath := store.rootFolder + "/" + token
@@ -41,7 +41,7 @@ func (store FileStore) AddFile(fileContent string) string {
 		return ""
 	}
 
-	_, err = file.WriteString(string(fileContent))
+	_, err = file.WriteString(fileContent)
 	if err != nil {
 		log.Println("Failed to write file", filePath, err)
 		return ""
