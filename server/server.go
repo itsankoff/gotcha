@@ -34,8 +34,9 @@ func New(config *Config) *Server {
 		messageHandlers: make(map[string]chan *common.Message),
 	}
 
-	s.outputStore = NewOutputStore()
 	s.contactStore = NewContactStore()
+	s.authRegistry = NewAuthRegistry()
+	s.outputStore = NewOutputStore()
 	s.fileStore = NewFileStore(config.FileServerFolder,
 		config.FileServerHost)
 
@@ -44,7 +45,8 @@ func New(config *Config) *Server {
 
 	// register control handler
 	controlInput := make(chan *common.Message)
-	s.control = NewControl(controlInput, s.outputStore, s.contactStore)
+	s.control = NewControl(controlInput, s.outputStore,
+		s.contactStore, s.authRegistry)
 	s.messageHandlers["control"] = controlInput
 
 	// register message handler
@@ -55,8 +57,6 @@ func New(config *Config) *Server {
 	s.messageHandlers["message"] = messangerInput
 	s.messageHandlers["file"] = messangerInput
 	s.messageHandlers["history"] = historyInput
-
-	s.authRegistry = NewAuthRegistry()
 
 	return s
 }
