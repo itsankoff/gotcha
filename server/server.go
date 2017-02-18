@@ -38,7 +38,7 @@ func New(config *Config) *Server {
 	s.authRegistry = NewAuthRegistry()
 	s.outputStore = NewOutputStore()
 	s.fileStore = NewFileStore(config.FileServerFolder,
-		config.FileServerHost)
+		config.FileServerHost, config.FileServerPath)
 
 	historyInput := make(chan *common.Message)
 	s.history = NewHistory(historyInput, s.outputStore)
