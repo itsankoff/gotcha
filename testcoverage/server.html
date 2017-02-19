@@ -1,0 +1,1290 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/itsankoff/gotcha/server/authregistry.go (5.3%)</option>
+				
+				<option value="file1">github.com/itsankoff/gotcha/server/config.go (0.0%)</option>
+				
+				<option value="file2">github.com/itsankoff/gotcha/server/contactstore.go (4.8%)</option>
+				
+				<option value="file3">github.com/itsankoff/gotcha/server/control.go (4.8%)</option>
+				
+				<option value="file4">github.com/itsankoff/gotcha/server/filestore.go (14.3%)</option>
+				
+				<option value="file5">github.com/itsankoff/gotcha/server/group.go (0.0%)</option>
+				
+				<option value="file6">github.com/itsankoff/gotcha/server/history.go (15.6%)</option>
+				
+				<option value="file7">github.com/itsankoff/gotcha/server/messanger.go (23.8%)</option>
+				
+				<option value="file8">github.com/itsankoff/gotcha/server/outputstore.go (8.7%)</option>
+				
+				<option value="file9">github.com/itsankoff/gotcha/server/server.go (46.8%)</option>
+				
+				<option value="file10">github.com/itsankoff/gotcha/server/wss.go (12.9%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package server
+
+import (
+        "log"
+        "strconv"
+        "time"
+)
+
+// Stores authenticated users in memory
+type AuthRegistry struct {
+        users map[string][]string
+}
+
+func NewAuthRegistry() *AuthRegistry <span class="cov8" title="1">{
+        return &amp;AuthRegistry{
+                users: make(map[string][]string),
+        }
+}</span>
+
+// Register generates server domain user id which
+// for now is current ts in nanoseconds
+func (a *AuthRegistry) Register(username string, pass string) (string, bool) <span class="cov0" title="0">{
+        now := time.Now().UnixNano()
+        userId := strconv.FormatInt(now, 10)
+        a.users[userId] = []string{username, pass}
+        log.Printf("User %s registered with id %s", username, userId)
+        return userId, true
+}</span>
+
+// Authenticates authenticates the user id with it's password
+func (a *AuthRegistry) Authenticate(userId string, pass string) bool <span class="cov0" title="0">{
+        credentials, exists := a.users[userId]
+        if !exists </span><span class="cov0" title="0">{
+                log.Println("No user with this id", userId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">if credentials[1] != pass </span><span class="cov0" title="0">{
+                log.Println("Failed to autenticate user", userId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">log.Printf("User %s authenticated", userId)
+        return true</span>
+}
+
+// SearchContact searches globally for contact with param username
+func (a *AuthRegistry) SearchContact(username string) string <span class="cov0" title="0">{
+        for uId, c := range a.users </span><span class="cov0" title="0">{
+                if c[0] == username </span><span class="cov0" title="0">{
+                        return uId
+                }</span>
+        }
+
+        <span class="cov0" title="0">return ""</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package server
+
+type Config struct {
+        ListenHost       string
+        FileServerHost   string
+        FileServerPath   string
+        FileServerFolder string
+        SSLKeyPath       string
+        SSLCertPath      string
+}
+
+func NewConfig() *Config <span class="cov0" title="0">{
+        return &amp;Config{}
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package server
+
+import "log"
+
+// Stores contact lists for users
+type ContactStore struct {
+        contacts map[string][]string
+}
+
+func NewContactStore() *ContactStore <span class="cov8" title="1">{
+        return &amp;ContactStore{
+                contacts: make(map[string][]string),
+        }
+}</span>
+
+// AddContact adds contact in user's contact list
+func (c *ContactStore) AddContact(userId string, contactId string) bool <span class="cov0" title="0">{
+        userContacts, ok := c.contacts[userId]
+        if !ok </span><span class="cov0" title="0">{
+                c.contacts[userId] = []string{}
+                userContacts = c.contacts[userId]
+        }</span>
+
+        <span class="cov0" title="0">userContacts = append(userContacts, contactId)
+        c.contacts[userId] = userContacts
+        return true</span>
+}
+
+// RemoveContact removes contact from user's contact list
+func (c *ContactStore) RemoveContact(userId string, contactId string) bool <span class="cov0" title="0">{
+        userContacts, ok := c.contacts[userId]
+        if !ok </span><span class="cov0" title="0">{
+                log.Println("No contacts for user", userId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">for i, uc := range userContacts </span><span class="cov0" title="0">{
+                if uc == contactId </span><span class="cov0" title="0">{
+                        userContacts = append(userContacts[:i], userContacts[i+1:]...)
+                        return true
+                }</span>
+        }
+
+        <span class="cov0" title="0">return false</span>
+}
+
+// ListContacts returns user's contact list for userId
+func (c *ContactStore) ListContacts(userId string) ([]string, bool) <span class="cov0" title="0">{
+        userContacts, ok := c.contacts[userId]
+        if !ok </span><span class="cov0" title="0">{
+                return []string{}, false
+        }</span>
+
+        <span class="cov0" title="0">return userContacts, true</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package server
+
+import (
+        "github.com/itsankoff/gotcha/common"
+        "log"
+)
+
+// Main facility which handles all the control
+// protocol messages
+type Control struct {
+        input        chan *common.Message
+        groups       []*Group
+        outputStore  *OutputStore
+        contactStore *ContactStore
+        authRegistry *AuthRegistry
+}
+
+func NewControl(input chan *common.Message,
+        outputStore *OutputStore, contactStore *ContactStore,
+        authRegistry *AuthRegistry) *Control <span class="cov8" title="1">{
+        c := &amp;Control{
+                input:        input,
+                outputStore:  outputStore,
+                contactStore: contactStore,
+                authRegistry: authRegistry,
+        }
+
+        go c.listen()
+        return c
+}</span>
+
+func (c Control) listen() <span class="cov8" title="1">{
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-c.input:
+                        log.Println("Control received", msg.From(), msg.Cmd())
+                        valid := c.validate(msg)
+                        if valid </span><span class="cov0" title="0">{
+                                payload, err := msg.ParseJsonData()
+                                if err == nil </span><span class="cov0" title="0">{
+                                        cmd := msg.Cmd()
+                                        switch cmd </span>{
+                                        <span class="cov0" title="0">case "list_contacts":
+                                                contacts, _ := c.contactStore.ListContacts(msg.From())
+                                                response := common.NewResponse(msg, "contacts", contacts)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "add_contact":
+                                                contactId := payload["contact_id"].(string)
+                                                added := c.AddContact(msg.From(), contactId)
+                                                response := common.NewResponse(msg, "added", added)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "remove_contact":
+                                                contactId := payload["contact_id"].(string)
+                                                removed := c.RemoveContact(msg.From(), contactId)
+                                                response := common.NewResponse(msg, "removed", removed)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "search_contact":
+                                                contactName := payload["contact_name"].(string)
+                                                contactId := c.SearchContact(msg.From(), contactName)
+                                                response := common.NewResponse(msg, "contact_id", contactId)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "create_group":
+                                                groupId := c.CreateGroup()
+                                                c.AddToGroup(groupId, msg.From())
+                                                response := common.NewResponse(msg, "group_id", groupId)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "add_to_group":
+                                                groupId := payload["group_id"].(string)
+                                                userId := payload["user_id"].(string)
+                                                added := c.AddToGroup(groupId, userId)
+                                                response := common.NewResponse(msg, "added", added)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "remove_from_group":
+                                                groupId := payload["group_id"].(string)
+                                                userId := payload["user_id"].(string)
+                                                removed := c.RemoveFromGroup(groupId, userId)
+                                                response := common.NewResponse(msg, "removed", removed)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "delete_group":
+                                                groupId := payload["group_id"].(string)
+                                                deleted := c.DeleteGroup(groupId)
+                                                response := common.NewResponse(msg, "deleted", deleted)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">case "list_groups":
+                                                groups := c.ListGroups(msg.From())
+                                                response := common.NewResponse(msg, "groups", groups)
+                                                c.outputStore.Send(response)</span>
+                                        <span class="cov0" title="0">default:
+                                                log.Println("Unknown control command", cmd)</span>
+                                        }
+                                }<span class="cov0" title="0"> else {
+                                        log.Println("Failed to decode control message payload", msg)
+                                }</span>
+                        }<span class="cov0" title="0"> else {
+                                log.Println("Invalid control message", msg)
+                        }</span>
+                }
+        }
+}
+
+func (c Control) validate(msg *common.Message) bool <span class="cov0" title="0">{
+        return true
+}</span>
+
+func (c Control) findGroup(groupId string) *Group <span class="cov0" title="0">{
+        for _, g := range c.groups </span><span class="cov0" title="0">{
+                if g.Id == groupId </span><span class="cov0" title="0">{
+                        return g
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// ListContacts handles protocol "list_contacts"
+// Returns array with contact ids
+func (c Control) ListContacts(user string) ([]string, bool) <span class="cov0" title="0">{
+        contacts, listed := c.contactStore.ListContacts(user)
+        log.Printf("List contacts for user %s %t", user, listed)
+        return contacts, listed
+}</span>
+
+// AddContact handles protocol "add_contact"
+func (c Control) AddContact(user string, contactId string) bool <span class="cov0" title="0">{
+        added := c.contactStore.AddContact(user, contactId)
+        log.Printf("Add contact %s for user %s %t", contactId, user, added)
+        return added
+}</span>
+
+// RemoveContact handles protocol "remove_contact"
+func (c Control) RemoveContact(user string, contactId string) bool <span class="cov0" title="0">{
+        removed := c.contactStore.RemoveContact(user, contactId)
+        log.Printf("Remove contact %s for user %s %t", contactId, user, removed)
+        return removed
+}</span>
+
+// SearchContact handles protocol "search_contact"
+// Used for finding a user by username
+func (c Control) SearchContact(user string, contactName string) string <span class="cov0" title="0">{
+        contactId := c.authRegistry.SearchContact(contactName)
+        log.Printf("Seach contact %s for user %s contactId: %s",
+                contactName, user, contactId)
+        return contactId
+}</span>
+
+// CreateGroup handles protocol "create_group"
+func (c *Control) CreateGroup() string <span class="cov0" title="0">{
+        group := NewGroup()
+        c.groups = append(c.groups, group)
+        c.outputStore.AddOutput(group.Id, group.Out)
+        return group.Id
+}</span>
+
+// AddToGroup handles protocol "add_to_group"
+func (c Control) AddToGroup(groupId string, userId string) bool <span class="cov0" title="0">{
+        group := c.findGroup(groupId)
+        if group == nil </span><span class="cov0" title="0">{
+                log.Printf("Failed to add user. No group with id", groupId, userId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">userOutput := c.outputStore.GetOutput(userId)
+        if userOutput == nil </span><span class="cov0" title="0">{
+                log.Printf("Failed to add user to group. No user output",
+                        groupId, userId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">added := group.AddOutput(userId, userOutput)
+        log.Printf("Group created %s from user %s %t", groupId, userId, added)
+        return added</span>
+}
+
+// RemoveToGroup handles protocol "remove_from_group"
+func (c Control) RemoveFromGroup(groupId string, userId string) bool <span class="cov0" title="0">{
+        group := c.findGroup(groupId)
+        if group == nil </span><span class="cov0" title="0">{
+                log.Printf("Failed to remove user %s from group %s. No group with id",
+                        userId, groupId)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">removed := group.RemoveOutput(userId)
+        log.Printf("User %s removed from group %s %t", groupId, userId, removed)
+        return removed</span>
+}
+
+// DeleteGroup handles protocol "delete_group"
+func (c *Control) DeleteGroup(groupId string) bool <span class="cov0" title="0">{
+        var deleted bool
+        for i, group := range c.groups </span><span class="cov0" title="0">{
+                if group.Id == groupId </span><span class="cov0" title="0">{
+                        c.groups = append(c.groups[:i], c.groups[i+1:]...)
+                        c.outputStore.RemoveOutput(group.Id)
+                        close(group.Out)
+                        deleted = true
+                        break</span>
+                }
+        }
+
+        <span class="cov0" title="0">log.Printf("Group %s deleted %t", groupId, deleted)
+        return deleted</span>
+}
+
+// ListGroups handles protocol "list_groups"
+func (c Control) ListGroups(userId string) *[]string <span class="cov0" title="0">{
+        groupIds := []string{}
+        for _, g := range c.groups </span><span class="cov0" title="0">{
+                groupIds = append(groupIds, g.Id)
+        }</span>
+
+        <span class="cov0" title="0">log.Printf("List groups for user %s", userId)
+        return &amp;groupIds</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package server
+
+import (
+        "log"
+        "net/http"
+        "os"
+        "strconv"
+        "strings"
+        "time"
+)
+
+// Stores the files locally and expose http
+// interfaces from where you can download the files by file token
+type FileStore struct {
+        rootFolder  string
+        host        string
+        networkPath string
+}
+
+func NewFileStore(folder, host, networkPath string) *FileStore <span class="cov8" title="1">{
+        fileStore := &amp;FileStore{
+                rootFolder:  folder,
+                host:        host,
+                networkPath: networkPath,
+        }
+
+        fs := http.FileServer(http.Dir(folder))
+        http.Handle(fileStore.networkPath, fs)
+        return fileStore
+}</span>
+
+func (store FileStore) buildUri(token string) string <span class="cov0" title="0">{
+        return store.host + store.networkPath + token
+}</span>
+
+// AddTextFile stores the stores the file in root folder
+// and generates access uri
+func (store FileStore) AddTextFile(fileContent string) string <span class="cov0" title="0">{
+        now := time.Now().UnixNano()
+        token := "tmp" + strconv.FormatInt(now, 10)
+        filePath := store.rootFolder + "/" + token
+        file, err := os.Create(filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to open and save", filePath, err)
+                return ""
+        }</span>
+
+        <span class="cov0" title="0">_, err = file.WriteString(fileContent)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to write file", filePath, err)
+                return ""
+        }</span>
+
+        <span class="cov0" title="0">uri := store.buildUri(token)
+        log.Println("File saved", uri)
+
+        return uri</span>
+}
+
+// RemoveFile removes the file for this uri
+func (store FileStore) RemoveFile(uri string) bool <span class="cov0" title="0">{
+        split := strings.Split(uri, "/")
+        token := split[len(split)-1]
+        filePath := store.rootFolder + "/" + token
+        err := os.Remove(filePath)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to remove file for uri", uri)
+                return false
+        }</span>
+
+        <span class="cov0" title="0">log.Printf("File with %s deleted", uri)
+        return true</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package server
+
+import (
+        "github.com/itsankoff/gotcha/common"
+        "strconv"
+        "time"
+)
+
+// Aggregate output. When a message is received in the Out
+// channel it will send it to all outputs in the group.
+// Like a multicast channel
+type Group struct {
+        Id      string
+        Out     chan *common.Message
+        outputs map[string]chan&lt;- *common.Message
+}
+
+func NewGroup() *Group <span class="cov0" title="0">{
+        group := &amp;Group{
+                Id:      strconv.FormatInt(time.Now().Unix(), 10),
+                Out:     make(chan *common.Message),
+                outputs: make(map[string]chan&lt;- *common.Message),
+        }
+
+        go group.listen()
+        return group
+}</span>
+
+func (g *Group) listen() <span class="cov0" title="0">{
+        for </span><span class="cov0" title="0">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-g.Out:
+                        for _, out := range g.outputs </span><span class="cov0" title="0">{
+                                out &lt;- msg
+                        }</span>
+                }
+        }
+}
+
+// AddOutput adds output in the aggregate
+func (g *Group) AddOutput(id string, output chan&lt;- *common.Message) bool <span class="cov0" title="0">{
+        g.outputs[id] = output
+        return true
+}</span>
+
+// RemoveOutput removes output from the aggregate
+func (g *Group) RemoveOutput(id string) bool <span class="cov0" title="0">{
+        _, ok := g.outputs[id]
+        if ok </span><span class="cov0" title="0">{
+                delete(g.outputs, id)
+                return true
+        }</span>
+
+        <span class="cov0" title="0">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package server
+
+import (
+        "github.com/itsankoff/gotcha/common"
+        "log"
+        "time"
+)
+
+// Stores message history
+type History struct {
+        input       chan *common.Message
+        outputStore *OutputStore
+}
+
+func NewHistory(input chan *common.Message, outputStore *OutputStore) *History <span class="cov8" title="1">{
+        history := &amp;History{
+                input:       input,
+                outputStore: outputStore,
+        }
+
+        go history.listen()
+        return history
+}</span>
+
+func (h History) listen() <span class="cov8" title="1">{
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-h.input:
+                        valid := h.validate(msg)
+                        if !valid </span><span class="cov0" title="0">{
+                                log.Println("Failed to validate history message")
+                                response := common.NewResponse(msg, "error", "invalid message")
+                                h.outputStore.Send(response)
+                                return
+                        }</span>
+
+                        <span class="cov0" title="0">payload, err := msg.ParseJsonData()
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Printf("Failed to parse history message from %s", msg.From())
+                                response := common.NewResponse(msg, "error", "bad message")
+                                h.outputStore.Send(response)
+                                return
+                        }</span>
+
+                        <span class="cov0" title="0">cmd := msg.Cmd()
+                        switch cmd </span>{
+                        <span class="cov0" title="0">case "get_history":
+                                userId := msg.From()
+                                forUserId := payload["for_user_id"].(string)
+                                fromDate := time.Unix(int64(payload["from_date"].(float64)), 0)
+                                toDate := time.Unix(int64(payload["to_date"].(float64)), 0)
+                                messages := h.GetHistory(userId, forUserId, fromDate, toDate)
+                                accumulated := h.accumulate(messages)
+                                response := common.NewResponse(msg, "history", accumulated)
+                                h.outputStore.Send(response)</span>
+                        }
+                }
+        }
+}
+
+func (h History) validate(msg *common.Message) bool <span class="cov0" title="0">{
+        return true
+}</span>
+
+func (h History) accumulate(messages []*common.Message) string <span class="cov0" title="0">{
+        return ""
+}</span>
+
+// AddMessage adds in the history
+func (h History) AddMessage(msg *common.Message) bool <span class="cov0" title="0">{
+        log.Println("Add message in history", msg)
+        return false
+}</span>
+
+// GetHistory returns a history for user conversation
+// for a time period
+func (h History) GetHistory(userId string, forUserId string,
+        from time.Time, to time.Time) []*common.Message <span class="cov0" title="0">{
+        return []*common.Message{}
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package server
+
+import (
+        "github.com/itsankoff/gotcha/common"
+        "log"
+)
+
+// Handler for all messages/files communication
+// between the clients.
+type Messanger struct {
+        input       chan *common.Message
+        history     *History
+        fileStore   *FileStore
+        outputStore *OutputStore
+}
+
+// NewMessenger creates a new messagener object
+// which handlers messages through input channel.
+func NewMessanger(input chan *common.Message,
+        history *History, outputStore *OutputStore, fileStore *FileStore) *Messanger <span class="cov8" title="1">{
+        m := &amp;Messanger{
+                input:       input,
+                fileStore:   fileStore,
+                history:     history,
+                outputStore: outputStore,
+        }
+
+        go m.listen()
+        return m
+}</span>
+
+func (m *Messanger) listen() <span class="cov8" title="1">{
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-m.input:
+                        log.Println("Message received")
+                        valid := m.validate(msg)
+                        if valid </span><span class="cov0" title="0">{
+                                if msg.CmdType() == "file" </span><span class="cov0" title="0">{
+                                        var uri string
+                                        if msg.DataType() == common.TEXT </span><span class="cov0" title="0">{
+                                                fileContent := msg.String()
+                                                uri = m.fileStore.AddTextFile(fileContent)
+                                        }</span>
+
+                                        <span class="cov0" title="0">newMsg := common.NewMessage(msg.From(), msg.To(),
+                                                msg.CmdType(), msg.Cmd(),
+                                                msg.ExpireDate(), common.TEXT, uri)
+                                        msg = &amp;newMsg</span>
+                                }
+
+                                <span class="cov0" title="0">if msg.ExpireDate().IsZero() </span><span class="cov0" title="0">{
+                                        m.history.AddMessage(msg)
+                                }</span><span class="cov0" title="0"> else {
+                                        log.Println("Temporary Message")
+                                }</span>
+
+                                <span class="cov0" title="0">m.outputStore.Send(msg)</span>
+                        }<span class="cov0" title="0"> else {
+                                log.Println("Invalid instant message", msg)
+                        }</span>
+                }
+        }
+}
+
+func (m Messanger) validate(msg *common.Message) bool <span class="cov0" title="0">{
+        return true
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package server
+
+import (
+        "errors"
+        "github.com/itsankoff/gotcha/common"
+        "log"
+)
+
+// Store for all authenticated outputs
+// Main facility to send a message to the remote user
+type OutputStore struct {
+        outputs map[string]chan&lt;- *common.Message
+}
+
+func NewOutputStore() *OutputStore <span class="cov8" title="1">{
+        out := &amp;OutputStore{
+                outputs: make(map[string]chan&lt;- *common.Message),
+        }
+
+        return out
+}</span>
+
+// AddOutput adds user output in the store by id
+func (store *OutputStore) AddOutput(id string,
+        output chan&lt;- *common.Message) error <span class="cov0" title="0">{
+        _, ok := store.outputs[id]
+        if ok </span><span class="cov0" title="0">{
+                return errors.New("Output for already exists for id " + id)
+        }</span>
+
+        <span class="cov0" title="0">store.outputs[id] = output
+        log.Println("Add output in store", id)
+        return nil</span>
+}
+
+// RemoveOutput removes user output from the store by id
+func (store *OutputStore) RemoveOutput(id string) error <span class="cov0" title="0">{
+        _, ok := store.outputs[id]
+        if ok </span><span class="cov0" title="0">{
+                delete(store.outputs, id)
+                log.Println("Remove output from store", id)
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">return errors.New("Failed to remove output from store " + id)</span>
+}
+
+// GetOutput returns a user output from the store by id
+func (store OutputStore) GetOutput(id string) chan&lt;- *common.Message <span class="cov0" title="0">{
+        output, ok := store.outputs[id]
+        if ok </span><span class="cov0" title="0">{
+                return output
+        }</span>
+
+        <span class="cov0" title="0">log.Println("Failed to get output for id", id)
+        return nil</span>
+}
+
+// Send sends a message to user's output
+func (store OutputStore) Send(msg *common.Message) <span class="cov0" title="0">{
+        output := store.GetOutput(msg.To())
+        if output != nil </span><span class="cov0" title="0">{
+                output &lt;- msg
+        }</span><span class="cov0" title="0"> else {
+                log.Println("Failed to send message", msg)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">// Package server delivers all the functionallity to create
+// a chat server.
+// It supports extensions for multiple transports.
+// See transport.go for more information
+package server
+
+import (
+        "errors"
+        "github.com/itsankoff/gotcha/common"
+        "log"
+)
+
+// Main server type
+type Server struct {
+        transports      map[string]Transport
+        users           []*common.User
+        connected       chan *common.User
+        disconnected    chan *common.User
+        aggregate       chan *common.Message
+        messageHandlers map[string]chan *common.Message
+
+        outputStore  *OutputStore
+        history      *History
+        contactStore *ContactStore
+        authRegistry *AuthRegistry
+        fileStore    *FileStore
+
+        control   *Control
+        messanger *Messanger
+}
+
+// New creates new server instance
+func New(config *Config) *Server <span class="cov8" title="1">{
+        s := &amp;Server{
+                transports:      make(map[string]Transport),
+                users:           make([]*common.User, 10),
+                connected:       make(chan *common.User),
+                disconnected:    make(chan *common.User),
+                aggregate:       make(chan *common.Message),
+                messageHandlers: make(map[string]chan *common.Message),
+        }
+
+        s.contactStore = NewContactStore()
+        s.authRegistry = NewAuthRegistry()
+        s.outputStore = NewOutputStore()
+        s.fileStore = NewFileStore(config.FileServerFolder,
+                config.FileServerHost, config.FileServerPath)
+
+        historyInput := make(chan *common.Message)
+        s.history = NewHistory(historyInput, s.outputStore)
+
+        // register control handler
+        controlInput := make(chan *common.Message)
+        s.control = NewControl(controlInput, s.outputStore,
+                s.contactStore, s.authRegistry)
+        s.messageHandlers["control"] = controlInput
+
+        // register message handler
+        messangerInput := make(chan *common.Message)
+
+        s.messanger = NewMessanger(messangerInput, s.history,
+                s.outputStore, s.fileStore)
+        s.messageHandlers["message"] = messangerInput
+        s.messageHandlers["file"] = messangerInput
+        s.messageHandlers["history"] = historyInput
+
+        return s
+}</span>
+
+func (s *Server) startRouter() <span class="cov8" title="1">{
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-s.aggregate:
+                        cmdType := msg.CmdType()
+                        handler, ok := s.messageHandlers[cmdType]
+                        if ok </span><span class="cov0" title="0">{
+                                handler &lt;- msg
+                        }</span><span class="cov0" title="0"> else {
+                                log.Println("No registered handler for cmd type", cmdType)
+                        }</span>
+                }
+        }
+}
+
+func (s *Server) aggregateMessages(user *common.User) <span class="cov0" title="0">{
+        // 0: connected
+        // 1: registered
+        // 2: authenticated
+        var state int
+        for </span><span class="cov0" title="0">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-user.In:
+                        if msg == nil </span><span class="cov0" title="0">{
+                                log.Printf("Nil message in aggregate for id %s userId %s",
+                                        user.Id, user.UserId)
+                                s.outputStore.RemoveOutput(user.UserId)
+                                return
+                        }</span>
+
+                        <span class="cov0" title="0">switch state </span>{
+                        <span class="cov0" title="0">case 0:
+                                if msg.CmdType() != "auth" &amp;&amp; msg.Cmd() != "register" </span><span class="cov0" title="0">{
+                                        log.Printf("Wrong message %s for state %d", msg.Cmd(), state)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">packet, err := msg.ParseJsonData()
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Println("Failed to parse register message data", err)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">username := packet["username"].(string)
+                                pass := packet["password"].(string)
+                                userId, registered := s.authRegistry.Register(username, pass)
+                                if !registered </span><span class="cov0" title="0">{
+                                        log.Printf("Registration for %s failed", username)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">response := common.NewResponse(msg, "user_id", userId)
+                                user.Out &lt;- response
+                                state = 1</span>
+                        <span class="cov0" title="0">case 1:
+                                if msg.CmdType() != "auth" || msg.Cmd() != "auth" </span><span class="cov0" title="0">{
+                                        log.Printf("Wrong message %s for state %d", msg.Cmd(), state)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">packet, err := msg.ParseJsonData()
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Println("Failed to parse auth message data", err)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">userId := packet["user_id"].(string)
+                                pass := packet["password"].(string)
+                                authenticated := s.authRegistry.Authenticate(userId, pass)
+                                if !authenticated </span><span class="cov0" title="0">{
+                                        log.Printf("Authentication for %s failed", userId)
+                                        user.Disconnect()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">user.UserId = userId
+                                s.outputStore.AddOutput(user.UserId, user.Out)
+                                state = 2
+
+                                response := common.NewResponse(msg, "authenticated", true)
+                                user.Out &lt;- response</span>
+                        <span class="cov0" title="0">case 2:
+                                s.aggregate &lt;- msg</span>
+                        }
+                }
+        }
+}
+
+// AddTransport adds transport which later will listen on host
+func (s *Server) AddTransport(host string, t Transport) error <span class="cov8" title="1">{
+        if host == "" </span><span class="cov8" title="1">{
+                return errors.New("Can't add transport for an empty host")
+        }</span>
+
+        <span class="cov8" title="1">if t == nil </span><span class="cov8" title="1">{
+                return errors.New("Can't add nil transport")
+        }</span>
+
+        <span class="cov8" title="1">_, ok := s.transports[host]
+        if ok </span><span class="cov0" title="0">{
+                // prevent adding multiple transports for the same url
+                return errors.New("Try to add multiple transports for " + host)
+        }</span>
+
+        <span class="cov8" title="1">s.transports[host] = t
+        log.Println("Add transport for", host)
+        return nil</span>
+}
+
+// RemoveTransport removes the transport for the host
+func (s *Server) RemoveTransport(host string) error <span class="cov8" title="1">{
+        _, ok := s.transports[host]
+        if ok </span><span class="cov8" title="1">{
+                delete(s.transports, host)
+                log.Println("Remove transport for", host)
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">return errors.New("No trasport for host " + host)</span>
+}
+
+func (s *Server) userConnected() <span class="cov8" title="1">{
+        log.Println("Start user connected observer")
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case user := &lt;-s.connected:
+                        s.users = append(s.users, user)
+                        log.Println("Add user to server")
+                        go s.aggregateMessages(user)</span>
+                }
+        }
+}
+
+func (s *Server) userDisconnected() <span class="cov8" title="1">{
+        log.Println("Start user disconnected observer")
+        for </span><span class="cov8" title="1">{
+                select </span>{
+                <span class="cov0" title="0">case user := &lt;-s.disconnected:
+                        for i, u := range s.users </span><span class="cov0" title="0">{
+                                if u == user </span><span class="cov0" title="0">{
+                                        s.users = append(s.users[:i], s.users[i+1:]...)
+                                        log.Println("Remove user from server", user.Id)
+                                        break</span>
+                                }
+                        }
+                }
+        }
+}
+
+func (s Server) echoHandler(user *common.User) <span class="cov0" title="0">{
+        select </span>{
+        <span class="cov0" title="0">case msg := &lt;-user.In:
+                user.Out &lt;- msg</span>
+        }
+}
+
+// Start starts each transport in own gorouting. Blocks
+// until done channel is not closed
+func (s *Server) Start(done &lt;-chan interface{}) error <span class="cov8" title="1">{
+        if len(s.transports) == 0 </span><span class="cov8" title="1">{
+                return errors.New("Need to add transport before calling Start")
+        }</span>
+
+        <span class="cov8" title="1">go s.startRouter()
+        go s.userConnected()
+        go s.userDisconnected()
+        for url, t := range s.transports </span><span class="cov8" title="1">{
+                log.Println("Start transport for", url)
+                t.OnUserConnected(s.connected)
+                t.OnUserDisconnected(s.disconnected)
+                go t.Start(url, done)
+        }</span>
+
+        <span class="cov8" title="1">&lt;-done
+        close(s.connected)
+        close(s.disconnected)
+        close(s.aggregate)
+        return nil</span>
+}
+
+// StartAsync is same as Start by runs in async mode
+func (s *Server) StartAsync() (chan interface{}, error) <span class="cov8" title="1">{
+        if len(s.transports) == 0 </span><span class="cov8" title="1">{
+                return nil, errors.New("Need to add transport before calling Start")
+        }</span>
+
+        <span class="cov8" title="1">done := make(chan interface{})
+        go s.Start(done)
+        return done, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package server
+
+import (
+        "encoding/json"
+        "fmt"
+        "github.com/gorilla/websocket"
+        "github.com/itsankoff/gotcha/common"
+        "log"
+        "net/http"
+        "strconv"
+        "time"
+)
+
+// Transport implementation with websocket protocol
+type WebSocketServer struct {
+        upgrader     websocket.Upgrader
+        connections  map[*common.User]*websocket.Conn
+        connected    chan&lt;- *common.User
+        disconnected chan&lt;- *common.User
+        useSSL       bool
+        sslKeyPath   string
+        sslCertPath  string
+}
+
+func NewWebSocket(config *Config) WebSocketServer <span class="cov8" title="1">{
+        var upgrader = websocket.Upgrader{
+                ReadBufferSize:  1024,
+                WriteBufferSize: 1024,
+                CheckOrigin:     func(r *http.Request) bool </span><span class="cov0" title="0">{ return true }</span>,
+        }
+
+        <span class="cov8" title="1">wss := WebSocketServer{
+                upgrader:    upgrader,
+                connections: make(map[*common.User]*websocket.Conn),
+        }
+
+        if config.SSLKeyPath != "" </span><span class="cov0" title="0">{
+                wss.useSSL = true
+                wss.sslKeyPath = config.SSLKeyPath
+                wss.sslCertPath = config.SSLCertPath
+        }</span>
+
+        <span class="cov8" title="1">return wss</span>
+}
+
+func (wss *WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        log.Println("New http connection. Try to upgrade to WebSocket")
+        conn, err := wss.upgrader.Upgrade(w, r, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to upgrade to WebSocket", err)
+                fmt.Fprintf(w, "failed")
+        }</span>
+
+        <span class="cov0" title="0">wss.addConnection(conn)</span>
+}
+
+func (wss *WebSocketServer) addConnection(conn *websocket.Conn) <span class="cov0" title="0">{
+        now := time.Now().UnixNano()
+        id := strconv.FormatInt(now, 10)
+        user := common.NewUser(id)
+
+        wss.connections[user] = conn
+        log.Println("Add websocket connection", user.Id)
+
+        go wss.inputHandler(user, conn)
+        go wss.outputHandler(user, conn)
+        go wss.closeHandler(user, conn)
+        wss.connected &lt;- user
+}</span>
+
+func (wss *WebSocketServer) removeConnection(conn *websocket.Conn) <span class="cov0" title="0">{
+        for user, c := range wss.connections </span><span class="cov0" title="0">{
+                if c == conn </span><span class="cov0" title="0">{
+                        if wss.disconnected != nil </span><span class="cov0" title="0">{
+                                wss.disconnected &lt;- user
+                        }</span>
+
+                        <span class="cov0" title="0">close(user.In)
+                        close(user.Out)
+                        conn.Close()
+                        delete(wss.connections, user)
+                        log.Println("Remove websocket connection", user.Id)
+                        break</span>
+                }
+        }
+}
+
+func (wss *WebSocketServer) inputHandler(user *common.User, conn *websocket.Conn) <span class="cov0" title="0">{
+        log.Println("Start websocket input handler for", user.Id)
+        for </span><span class="cov0" title="0">{
+                msgType, msg, err := conn.ReadMessage()
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Println("Websocket connection read error", err.Error())
+                        wss.removeConnection(conn)
+                        return
+                }</span>
+
+                <span class="cov0" title="0">message, err := wss.decodeMessage(user, msg, msgType)
+                //                 log.Println("Websocket message", user.Id)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Println("Failed to decode message", msgType, msg)
+                        wss.removeConnection(conn)
+                        return
+                }</span>
+
+                <span class="cov0" title="0">user.In &lt;- message</span>
+        }
+}
+
+func (wss *WebSocketServer) outputHandler(user *common.User, conn *websocket.Conn) <span class="cov0" title="0">{
+        log.Println("Start websocket output handler for", user.Id)
+        for </span><span class="cov0" title="0">{
+                select </span>{
+                <span class="cov0" title="0">case msg := &lt;-user.Out:
+                        if msg == nil </span><span class="cov0" title="0">{
+                                log.Printf("Nil message in output channel for %s.", user.Id)
+                                log.Printf("Stop websocket output handler %s", user.Id)
+                                return
+                        }</span>
+
+                        //                         log.Println("Message in output channel for", user.Id)
+                        <span class="cov0" title="0">message, msgType := wss.encodeMessage(user, msg)
+                        if err := conn.WriteMessage(msgType, message); err != nil </span><span class="cov0" title="0">{
+                                log.Println("Websocket connection write error", err.Error())
+                                wss.removeConnection(conn)
+                                return
+                        }</span>
+                }
+        }
+}
+
+func (wss *WebSocketServer) closeHandler(user *common.User, conn *websocket.Conn) <span class="cov0" title="0">{
+        log.Println("Start websocket close handler for", user.Id)
+        select </span>{
+        <span class="cov0" title="0">case &lt;-user.Done:
+                log.Println("Done channel closed for user", user.Id)
+                wss.removeConnection(conn)</span>
+        }
+}
+
+func (wss *WebSocketServer) Start(host string, done &lt;-chan interface{}) <span class="cov8" title="1">{
+        subPath := "/websocket"
+        http.Handle(subPath, wss)
+        defer func() </span><span class="cov0" title="0">{
+                http.Handle(subPath, nil)
+        }</span>()
+
+        <span class="cov8" title="1">if wss.useSSL </span><span class="cov0" title="0">{
+                log.Println("WebSocket Server Listens on wss://" + host + subPath)
+                log.Fatal(http.ListenAndServeTLS(host, wss.sslCertPath, wss.sslKeyPath, nil))
+        }</span><span class="cov8" title="1"> else {
+                log.Println("WebSocket Server Listens on ws://" + host + subPath)
+                log.Fatal(http.ListenAndServe(host, nil))
+        }</span>
+}
+
+func (wss *WebSocketServer) OnUserConnected(handler chan&lt;- *common.User) <span class="cov8" title="1">{
+        wss.connected = handler
+}</span>
+
+func (wss *WebSocketServer) OnUserDisconnected(handler chan&lt;- *common.User) <span class="cov8" title="1">{
+        wss.disconnected = handler
+}</span>
+
+func (wss WebSocketServer) encodeMessage(u *common.User,
+        msg *common.Message) ([]byte, int) <span class="cov0" title="0">{
+        json, err := msg.Json()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Failed to encode message", err)
+                return []byte{}, 0
+        }</span>
+
+        <span class="cov0" title="0">return json, int(msg.DataType())</span>
+}
+
+func (wss WebSocketServer) decodeMessage(u *common.User,
+        data []byte,
+        dataType int) (*common.Message, error) <span class="cov0" title="0">{
+        var packet map[string]interface{}
+        err := json.Unmarshal(data, &amp;packet)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">expire_period, exists := packet["expire_period"]
+        var expire_date time.Time
+        if exists </span><span class="cov0" title="0">{
+                expire_date = time.Now().Add(time.Duration(expire_period.(float64)) * time.Second)
+        }</span>
+
+        <span class="cov0" title="0">messageFrom := packet["from"].(string)
+        messageTo := packet["to"].(string)
+        messageCmdType := packet["cmd_type"].(string)
+        messageCmd := packet["cmd"].(string)
+        messageDataType := common.DataType(packet["data_type"].(float64))
+
+        message := common.NewMessage(messageFrom, messageTo,
+                messageCmdType, messageCmd,
+                expire_date,
+                messageDataType, packet["data"])
+        return &amp;message, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
