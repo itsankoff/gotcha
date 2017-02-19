@@ -19,3 +19,4 @@
 * Finish interactive mode for client
 * Fix json handling
 * Fix type assertions
+* Run go vet, go lint and fix the problems
