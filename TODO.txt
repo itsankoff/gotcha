@@ -12,3 +12,10 @@
 (done) Server SSL
 (done) Iteractive mode
 (done) Documentation
+* Add unit more unittests
+* Add benchmark tests
+* Fix synchronization in wss.go, server.go, outputstore.go
+* Add DB support
+* Finish interactive mode for client
+* Fix json handling
+* Fix type assertions
