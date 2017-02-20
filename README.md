@@ -12,27 +12,30 @@ This repository provides both library which you can integrate in your project an
 
 <a name="install">
 ## Install
-
-    go get github.com/itsankoff/gotcha
-    go install github.com/itsankoff/gotcha/cmd/server
-    go install github.com/itsankoff/gotcha/cmd/client
+```
+go get github.com/itsankoff/gotcha/cmd/server
+go get github.com/itsankoff/gotcha/cmd/client
+```
 
 <a name="usage">
 ## Usage
 **1. Simple usage of client and server applications:**  
-
-    /path/to/your/workspace/bin/server
-    /path/to/your/workspace/bin/client
+```
+/path/to/your/workspace/bin/server
+/path/to/your/workspace/bin/client
+```
 
 **2. More sophisticated usage:**  
-
-    /path/to/your/workspace/bin/server --host=<ip:port> --key_path=<private key path> --cert_path=<cert path>
-    /path/to/your/workspace/bin/client --host=<ip:port>
+```
+/path/to/your/workspace/bin/server --host=<ip:port> --key_path=<private key path> --cert_path=<cert path>
+/path/to/your/workspace/bin/client --host=<ip:port>
+```
 
 **3. For full information about all possible options for both client and server run:**  
-
-    /path/to/your/workspace/bin/server --help
-    /path/to/your/workspace/bin/client --help
+```
+/path/to/your/workspace/bin/server --help
+/path/to/your/workspace/bin/client --help
+```
 
 **4. For library API reference check the documentation and
     [client examples files](https://github.com/itsankoff/gotcha/blob/master/src/client/) and
