@@ -46,8 +46,6 @@ func TestConnect(t *testing.T) {
 		fmt.Println(err)
 		t.Fail()
 	}
-	// Output:
-	// connected
 }
 
 func TestConnectAsync(t *testing.T) {
@@ -61,21 +59,17 @@ func TestConnectAsync(t *testing.T) {
 		fmt.Println("Failed to connect")
 		t.Fail()
 	}
-	// Output:
-	// connected
 }
 
 func TestDisconnect(t *testing.T) {
 	client := getClient()
 	client.Connect(serverHost)
 	client.Disconnect()
-	// Output:
 }
 
 func TestDisconnectWithoutConnect(t *testing.T) {
 	client := getClient()
 	client.Disconnect()
-	// Output:
 }
 
 func TestReconnect(t *testing.T) {
@@ -94,8 +88,6 @@ func TestReconnect(t *testing.T) {
 	}
 
 	fmt.Println("reconnected")
-	// Output:
-	// reconnected
 }
 
 func TestReconnectNoHost(t *testing.T) {
@@ -109,9 +101,6 @@ func TestReconnectNoHost(t *testing.T) {
 	} else {
 		t.Fatal("Can't call reconnect without any connect")
 	}
-
-	// Output:
-	// no host
 }
 
 func TestReconnectAsync(t *testing.T) {
@@ -131,8 +120,6 @@ func TestReconnectAsync(t *testing.T) {
 	} else {
 		t.Fatal("Failed to reconnect async")
 	}
-	// Output
-	// reconnected
 }
 
 func TestReconnectAsyncNoHost(t *testing.T) {
@@ -146,8 +133,6 @@ func TestReconnectAsyncNoHost(t *testing.T) {
 	} else {
 		t.Log("no host")
 	}
-	// Output
-	// no host
 }
 
 func TestRegister(t *testing.T) {
@@ -161,8 +146,6 @@ func TestRegister(t *testing.T) {
 	} else {
 		t.Log("registered")
 	}
-	// Output:
-	// registered
 }
 
 func TestAuthenticate(t *testing.T) {
@@ -174,8 +157,6 @@ func TestAuthenticate(t *testing.T) {
 	} else {
 		t.Log("authenticated")
 	}
-	// Output:
-	// authenticated
 }
 
 func TestListContactsEmpty(t *testing.T) {
@@ -190,8 +171,6 @@ func TestListContactsEmpty(t *testing.T) {
 	if len(contacts) == 0 {
 		t.Log("empty contacts")
 	}
-	// Output:
-	// empty contacts
 }
 
 func TestAddContact(t *testing.T) {
@@ -204,8 +183,6 @@ func TestAddContact(t *testing.T) {
 	} else {
 		t.Log("added")
 	}
-	// Output:
-	// added
 }
 
 func TestListContactsOneContact(t *testing.T) {
@@ -228,8 +205,6 @@ func TestListContactsOneContact(t *testing.T) {
 
 		t.Log(contacts[0])
 	}
-	// Output:
-	// user2
 }
 
 func TestSendMessage(t *testing.T) {
@@ -244,8 +219,6 @@ func TestSendMessage(t *testing.T) {
 	} else {
 		t.Log(data)
 	}
-	// Output:
-	// hello
 }
 
 func TestSendTextFile(t *testing.T) {

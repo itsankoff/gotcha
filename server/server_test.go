@@ -22,7 +22,6 @@ func TestServer_AddTrasnport(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// Output:
 }
 
 func TestServer_AddTransport_EmptyHost(t *testing.T) {
@@ -32,7 +31,6 @@ func TestServer_AddTransport_EmptyHost(t *testing.T) {
 	if err == nil {
 		t.Error("Need error when adding transport for empty host")
 	}
-	// Output:
 }
 
 func TestServer_AddTransport_NoTransport(t *testing.T) {
@@ -41,7 +39,6 @@ func TestServer_AddTransport_NoTransport(t *testing.T) {
 	if err == nil {
 		t.Error("Need error when adding a nil transport for a host")
 	}
-	// Output:
 }
 
 func TestServer_Start(t *testing.T) {
@@ -51,7 +48,6 @@ func TestServer_Start(t *testing.T) {
 	if err == nil {
 		t.Error("Need error if trying to start server without any transport")
 	}
-	// Output:
 }
 
 func TestServer_StartAsync(t *testing.T) {
@@ -60,7 +56,6 @@ func TestServer_StartAsync(t *testing.T) {
 	if err == nil {
 		t.Error("Need error if trying to start server without any transport")
 	}
-	// Output:
 }
 
 func TestServer_RemoveTransport(t *testing.T) {
@@ -75,7 +70,6 @@ func TestServer_RemoveTransport(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// Output:
 }
 
 func ExampleServer_StartAsync() {
@@ -93,5 +87,4 @@ func ExampleServer_StartAsync() {
 		close(done)
 	}()
 	<-done
-	// Output:
 }
