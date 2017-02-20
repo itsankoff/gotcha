@@ -38,8 +38,8 @@ go get github.com/itsankoff/gotcha/cmd/client
 ```
 
 **4. For library API reference check the documentation and
-    [client examples files](https://github.com/itsankoff/gotcha/blob/master/src/client/) and
-    [server examples files](https://github.com/itsankoff/gotcha/blob/master/src/server/):**
+    [client examples files](https://github.com/itsankoff/gotcha/blob/master/client/client_test.go) and
+    [server examples files](https://github.com/itsankoff/gotcha/blob/master/server/server_test.go):**
 
 <a name="troubleshooting">
 ## Troubleshooting
