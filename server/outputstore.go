@@ -6,12 +6,13 @@ import (
 	"log"
 )
 
-// Store for all authenticated outputs
-// Main facility to send a message to the remote user
+// Store for all authenticated outputs. Main facility to send messages to remote
+// users
 type OutputStore struct {
 	outputs map[string]chan<- *common.Message
 }
 
+// NewOutputStore returns a valid store.
 func NewOutputStore() *OutputStore {
 	out := &OutputStore{
 		outputs: make(map[string]chan<- *common.Message),
