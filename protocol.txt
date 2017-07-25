@@ -35,12 +35,12 @@ COMMAND_TYPE:
 COMMANDS:
     register,
     auth,
-    
+
     list_contacts,
     search_contact,
     add_contact,
     remove_contact,
-    
+
     create_group,
     add_to_group,
     remove_from_group,
