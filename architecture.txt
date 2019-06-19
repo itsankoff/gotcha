@@ -1,7 +1,7 @@
 Message - custom type represeting the message
     from User
     to   User
-    message (utf-8 string)
+    message (data)
     messageType (binary, text)
 
 
@@ -11,8 +11,8 @@ User - custom type represeting a user
     Out chan Message
 
 
-Group - multicast wrapper of users where when a message is recieved
-        on any user in channel, it multicasts the message to all out channels
+Group - multicast wrapper of users. When a message is received
+        on any user in channel, it sends the message to all out channels
         for the rest of the users
     Id
 
