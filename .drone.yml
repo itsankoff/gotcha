@@ -1,0 +1,6 @@
+pipeline:
+  backend:
+    image: golang
+    commands:
+      - make server
+      - make client
